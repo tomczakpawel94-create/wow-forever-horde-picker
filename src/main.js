@@ -209,6 +209,8 @@ app.innerHTML=`<main class="wrap">
 <section id="map-view" class="page-view map-view" role="tabpanel" hidden>
   <h2 class="section-title">Gdzie zaczyna każda rasa?</h2>
   <p class="section-lead">Wybierz rasę, żeby zobaczyć jej strefę i dokładną lokację startową. Przycisk otwiera mapę tej strefy w osobnej karcie. Orc i Troll zaczynają w tym samym miejscu.</p>
+  <p class="section-lead">Pełna mapa świata Azeroth z lokacjami, miastami i poziomami stref:</p>
+  <p><a class="map-jump-button" style="display:inline-block;text-decoration:none;border:1px solid #66563a;border-radius:9px;background:#1b1a17;padding:10px 14px" href="https://theforeverera.com/en/map/#map=947&amp;z=0.00&amp;x=50.0&amp;y=50.0&amp;lvl=2" target="_blank" rel="noopener noreferrer">🌍 Otwórz pełną interaktywną mapę The Forever Era</a></p>
   <div class="map-race-picker" id="map-race-picker"></div>
   <article class="start-location-card" id="start-location-card" aria-live="polite"></article>
   <p class="profession-source-note">Mapy stref pochodzą z bazy WoW: Forever. Jeśli nazwa małego obszaru nie jest widoczna od razu, przybliż mapę lub sprawdź listę lokacji na stronie mapy.</p>
