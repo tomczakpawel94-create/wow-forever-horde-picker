@@ -90,6 +90,16 @@ const professionInfo = {
   'First Aid':{type:'Poboczna · wsparcie',what:'Wytwarza bandage z tkanin, by leczyć siebie lub sojuszników bez zużywania many. Wymaga chwili bez otrzymywania obrażeń, więc najlepiej używać jej po odsunięciu się od walki.',materials:'Cloth z humanoidów; w klasycznym zestawie także venom sacs do wytwarzania anti-venom. Recepty i szczegóły Forever mogą się różnić.',how:'Zbieraj cloth podczas questów, ucz się kolejnych bandage u First Aid trainerów lub z książek i używaj ich poza bezpośrednim ostrzałem.',good:'Bardzo pomocna dla klas bez własnego leczenia oraz jako dodatkowy sposób na oszczędzanie jedzenia i many. Nie zajmuje miejsca głównej profesji.',pair:'Brak wymaganej pary'}
 }
 
+const professionPairings = [
+  {pair:'Herbalism + Alchemy',type:'Zbieranie + wytwarzanie',materials:'Herbalism zbiera zioła w świecie.',result:'Alchemy zużywa je do tworzenia mikstur, eliksirów i innych preparatów.',why:'Zbierasz własne podstawowe składniki zamiast kupować je wszystkie. Nadwyżkę ziół możesz sprzedać, a mikstury przydają się podczas levelowania, w grupie i w PvP.',best:'Uniwersalny wybór dla każdej klasy; szczególnie wygodny, gdy chcesz samodzielnie uzupełniać zapasy.'},
+  {pair:'Mining + Engineering',type:'Zbieranie + wytwarzanie',materials:'Mining dostarcza rud, sztabek i kamienia.',result:'Engineering używa metali i części do gadżetów, materiałów wybuchowych oraz innych urządzeń.',why:'Wiele podstawowych komponentów możesz zdobywać sam. Engineering daje narzędzia sytuacyjne i przedmioty użytkowe; konkretne recepty i ich działanie sprawdź w wersji Forever.',best:'Dla graczy lubiących PvP, eksplorację, gadżety i samodzielne zdobywanie materiałów.'},
+  {pair:'Mining + Blacksmithing',type:'Zbieranie + wytwarzanie',materials:'Mining wydobywa rudę i kamień, a rudę można przetapiać na sztabki.',result:'Blacksmithing przerabia sztabki na broń, zbroje, tarcze i inne metalowe przedmioty.',why:'Jedna profesja dostarcza główny surowiec drugiej. Ogranicza to zakupy na Auction House i pozwala sprzedawać nadwyżkową rudę lub gotowe wyroby.',best:'Dla Warriorów, Paladinów i osób, które chcą tworzyć lub sprzedawać metalowy ekwipunek.'},
+  {pair:'Skinning + Leatherworking',type:'Zbieranie + wytwarzanie',materials:'Skinning pozyskuje skóry z pokonanych i ograbionych bestii.',result:'Leatherworking wykorzystuje skóry do szycia skórzanego ekwipunku i innych wyrobów.',why:'Materiały zdobywasz przy okazji questów i walk ze zwierzętami, więc łatwo rozwijać obie profesje równolegle.',best:'Dla Rogue, Huntera i Druida; może też być użyteczne dla klas korzystających z części kolczug.'},
+  {pair:'Tailoring + Enchanting',type:'Wytwarzanie + wytwarzanie',materials:'Tailoring szyje przedmioty z tkanin zdobywanych głównie z humanoidów.',result:'Enchanting może rozkładać niepotrzebne magiczne przedmioty na składniki do zaklinania.',why:'Niewykorzystane krawieckie wyroby mogą dostarczyć materiałów do Enchantingu. Nie potrzebujesz osobnej profesji zbierackiej, ale rozwój Enchantingu może wymagać wielu przedmiotów i złota.',best:'Dla Mage, Priest i Warlock oraz graczy, którzy chcą tworzyć torby/cloth gear i zaklinać ekwipunek.'},
+  {pair:'Herbalism + Mining',type:'Dwie profesje zbierackie',materials:'Zbierasz zioła i wydobywasz rudę podczas podróży po świecie.',result:'Sprzedajesz surowce albo przechowujesz je dla postaci z profesjami wytwórczymi.',why:'Nie musisz jednocześnie rozwijać profesji wytwórczej. To prosty sposób na zdobywanie złota i materiałów podczas levelowania.',best:'Dla nowych graczy, którzy chcą zarabiać na surowcach i zdecydować o profesjach wytwórczych później.'},
+  {pair:'Fishing + Cooking',type:'Dwie profesje poboczne',materials:'Fishing łowi ryby; część połowów jest składnikiem przepisów.',result:'Cooking przyrządza ryby i inne jedzenie, które odnawia zdrowie, a zależnie od przepisu może dawać bonusy.',why:'Łowisz składniki i od razu przerabiasz je na jedzenie. Mniej zależysz od zakupów i możesz przygotować zapas na dłuższą wyprawę.',best:'Dla każdej klasy, zwłaszcza podczas levelowania i gry solo. Profesje poboczne nie zajmują miejsc na dwie główne.'}
+]
+
 // Guide text is editorial advice. The ratings and the listed builds remain the site's existing data.
 const specGuides = {
   'Warlock|Affliction': {role:'DPS — ranged, damage over time', description:'Nakłada klątwy i efekty obrażeń w czasie, a potem utrzymuje przeciwników pod presją. Dobrze radzi sobie z długimi walkami i solo dzięki petowi oraz narzędziom kontroli.', early:'Sprawne questowanie; pet pomaga utrzymać przeciwników z dala.', mid:'Rośnie siła klątw i kontrola w dungeonach oraz PvP.', late:'Mocny w długich walkach i na wielu celach; wymaga pilnowania efektów.', pros:'Samowystarczalność, kontrola i stałe obrażenia.', cons:'Przygotowanie efektów zajmuje czas; obrażenia nie zawsze są natychmiastowe.'},
@@ -219,6 +229,9 @@ app.innerHTML=`<main class="wrap">
   <h2 class="section-title">Profesje w WoW: Forever</h2>
   <p class="section-lead">Główne profesje zbierają materiały lub wytwarzają przedmioty. Poboczne możesz rozwijać obok nich i nie zajmują dwóch głównych miejsc.</p>
   <div class="profession-intro"><b>Co wnosi Forever?</b><p>Profesje zachowują znajome recepty, ale dochodzą nowe przedmioty obozowe i użyteczność. Blizzard zapowiada po trzy obiekty do rozstawienia, uczone na różnych poziomach umiejętności, oraz premię lub narzędzie związane z każdą profesją. Szczegóły recept i efektów mogą zmieniać się w becie.</p><a href="https://worldofwarcraft.blizzard.com/en-us/news/24303313" target="_blank" rel="noreferrer">Oficjalny przegląd WoW: Forever</a></div>
+  <h3 class="profession-group-title">Najlepsze połączenia i dlaczego działają</h3>
+  <p class="section-lead">Wybierz parę pod swój cel: samodzielne materiały, zarabianie złota albo wytwarzanie przydatnych rzeczy. Profesje główne możesz zmienić, ale ich rozwijanie wymaga czasu.</p>
+  <div id="profession-pairings" class="profession-grid"></div>
   <h3 class="profession-group-title">Główne — wybierasz maksymalnie dwie</h3>
   <p class="section-lead">Trzy profesje zbierackie dostarczają surowców; sześć profesji wytwórczych zużywa je, by tworzyć przedmioty.</p>
   <div id="primary-profession-list" class="profession-grid"></div>
@@ -240,6 +253,8 @@ container.innerHTML=names.map(name=>{
 }
 renderGroup(primaryProfessions,'#primary-profession-list')
 renderGroup(secondaryProfessions,'#secondary-profession-list')
+const pairings=document.querySelector('#profession-pairings')
+if(pairings)pairings.innerHTML=professionPairings.map(item=>`<article class="profession-card"><div class="profession-card-head"><h4>${escapeHtml(item.pair)}</h4><span>${escapeHtml(item.type)}</span></div><div class="profession-facts"><section><b>Co daje pierwsza profesja</b><p>${escapeHtml(item.materials)}</p></section><section><b>Co daje druga</b><p>${escapeHtml(item.result)}</p></section><section><b>Dlaczego to dobra para</b><p>${escapeHtml(item.why)}</p></section></div><p class="profession-pair"><b>Najlepsza dla:</b> ${escapeHtml(item.best)}</p></article>`).join('')
 }
 
 function switchTab(tabId){
