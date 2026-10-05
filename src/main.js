@@ -2,7 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 import './style.css'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+// Prefer Supabase's current publishable key; keep the legacy anon variable
+// working for projects that have not migrated yet.
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
 
 const app = document.querySelector('#app')
 
