@@ -105,4 +105,4 @@ shell()
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
 document.querySelector('#reset').onclick=async()=>{if(!user)return alert('Zaloguj się.');await supabase.from('choices').delete().eq('user_id',user.id);marks={};render()}
 await auth(); await loadMarks()
-supabase.auth.onAuthStateChange(async()=>{await auth();await loadMarks()})
+supabase.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;auth();loadMarks()})
