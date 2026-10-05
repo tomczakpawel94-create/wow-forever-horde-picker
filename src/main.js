@@ -75,6 +75,11 @@ const raceStartInfo = {
   'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor',x:22,y:48},
   'Undead':{zone:'Tirisfal Glades · Deathknell',continent:'Eastern Kingdoms',x:69,y:17},
   'Skyborne — Windshaper':{zone:'Zephras Isle',continent:'Wielkie Morze',x:51,y:37}
+  'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor'},
+  'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor'},
+  'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor'},
+  'Undead':{zone:'Tirisfal Glades · Deathknell',continent:'Eastern Kingdoms'},
+  'Skyborne — Windshaper':{zone:'Zephras Isle',continent:'Wielkie Morze'}
 }
 
 const professionInfo = {
@@ -211,6 +216,8 @@ app.innerHTML=`<main class="wrap">
 <section id="map-view" class="page-view map-view" role="tabpanel" hidden>
   <h2 class="section-title">Gdzie zaczyna każda rasa?</h2>
   <p class="section-lead">Wybierz rasę albo kliknij znacznik. Mapa pokazuje przybliżone położenie strefy startowej na Azeroth. Orc i Troll zaczynają w tej samej strefie.</p>
+  <h2 class="section-title">Strefy startowe ras</h2>
+  <p class="section-lead">Wybierz rasę, aby zobaczyć jej strefę startową. Nie pokazujemy pinezek na poglądowym podkładzie, żeby nie sugerować niedokładnej lokalizacji.</p>
   <div class="map-race-picker" id="map-race-picker"></div>
   <div class="start-map-toolbar"><button type="button" id="map-zoom-out" aria-label="Pomniejsz mapę">−</button><button type="button" id="map-zoom-in" aria-label="Powiększ mapę">+</button><button type="button" id="map-reset">Pokaż całą mapę</button><span>Możesz też przeciągać mapę.</span></div>
   <div class="start-map-viewport" id="start-map-viewport" aria-label="Interaktywna mapa świata Azeroth">
@@ -221,6 +228,7 @@ app.innerHTML=`<main class="wrap">
   </div>
   <article class="start-location-card" id="start-location-card" aria-live="polite"></article>
   <p class="profession-source-note">Podkład przedstawia klasyczną mapę świata; znaczniki wskazują przybliżone położenie stref, a nie dokładny punkt wejścia. Windshaperowie zaczynają na Zephras Isle, osobnej wyspie WoW: Forever. <a href="https://forever.azerpug.com/" target="_blank" rel="noreferrer">Interaktywna mapa stref Forever</a> · <a href="https://www.warcrafttavern.com/community/art-resources/high-resolution-terrain-maps-of-azeroth" target="_blank" rel="noreferrer">Źródło mapy świata</a>.</p>
+  <p class="profession-source-note">Orc i Troll zaczynają w Durotarze; Tauren w Mulgore. Dokładne krainy, miasta i zakresy poziomów sprawdzisz w pełnym atlasie poniżej.</p>
   <section class="profession-intro full-atlas-intro"><h3>Pełny atlas świata WoW: Forever</h3><p>Przeglądaj krainy, sprawdzaj ich orientacyjne przedziały poziomów, miasta, lochy, flight masterów i połączenia statków. Atlas ma filtr poziomu postaci oraz wyszukiwarkę.</p><p><a href="https://theforeverera.com/en/map/" target="_blank" rel="noreferrer">Otwórz pełny interaktywny atlas WoW: Forever ↗</a></p></section>
 </section>
 <section id="profession-view" class="page-view profession-view" role="tabpanel" hidden>
@@ -264,6 +272,7 @@ function renderStartMap(){
   const markers=document.querySelector('#start-map-markers')
   const detail=document.querySelector('#start-location-card')
   if(!picker||!markers||!detail)return
+  if(!picker||!detail)return
   picker.innerHTML=Object.keys(raceStartInfo).map(race=>`<button type="button" class="map-race-chip ${selectedStartRace===race?'active':''}" data-start-race="${escapeHtml(race)}">${escapeHtml(race)}</button>`).join('')
   markers.innerHTML=Object.entries(raceStartInfo).map(([race,info])=>`<button type="button" class="map-marker ${selectedStartRace===race?'selected':''}" style="left:${info.x}%;top:${info.y}%" data-start-race="${escapeHtml(race)}" aria-label="${escapeHtml(race)} — ${escapeHtml(info.zone)}" title="${escapeHtml(race)}: ${escapeHtml(info.zone)}"><span>●</span></button>`).join('')
   const info=raceStartInfo[selectedStartRace]
