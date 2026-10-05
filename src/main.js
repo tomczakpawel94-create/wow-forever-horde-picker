@@ -93,16 +93,31 @@ if(marks[k]===mark){delete marks[k];await supabase.from('choices').delete().eq('
 else {marks[k]=mark;await supabase.from('choices').upsert({user_id:user.id,character_key:k,mark},{onConflict:'user_id,character_key'})}
 render()
 }
-async function auth(){
+async function auth(session=null){
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return
-const {data}=await supabase.auth.getSession(); user=data.session?.user||null
+if(session) user=session.user
+else {
+const {data}=await supabase.auth.getSession()
+user=data.session?.user||null
+}
 const a=document.querySelector('#auth')
-a.innerHTML=user?`<span class="user">${user.user_metadata?.full_name||user.email||'Discord user'}</span><button id="logout">Wyloguj</button>`:`<button id="login">🔵 Zaloguj przez Discord</button>`
-if(document.querySelector('#login'))document.querySelector('#login').onclick=()=>supabase.auth.signInWithOAuth({provider:'discord',options:{redirectTo:location.origin}})
-if(document.querySelector('#logout'))document.querySelector('#logout').onclick=()=>supabase.auth.signOut().then(()=>location.reload())
+a.innerHTML=user
+?`<span class="user">${user.user_metadata?.full_name||user.email||'Discord user'}</span><button id="logout">Wyloguj</button>`
+:`<button id="login">🔵 Zaloguj przez Discord</button>`
+
+if(document.querySelector('#login')){
+document.querySelector('#login').onclick=()=>supabase.auth.signInWithOAuth({
+provider:'discord',
+options:{redirectTo:location.origin}
+})
+}
+
+if(document.querySelector('#logout')){
+document.querySelector('#logout').onclick=()=>supabase.auth.signOut().then(()=>location.reload())
+}
 }
 shell()
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
 document.querySelector('#reset').onclick=async()=>{if(!user)return alert('Zaloguj się.');await supabase.from('choices').delete().eq('user_id',user.id);marks={};render()}
 await auth(); await loadMarks()
-supabase.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;auth();loadMarks()})
+supabase.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;auth(session);setTimeout(()=>loadMarks(),0)})
