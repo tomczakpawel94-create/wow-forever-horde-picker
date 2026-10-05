@@ -42,7 +42,7 @@ const data = [
   ['Troll','Warrior','Arms',9.0,8.8,9.4,7.8,8.4,8.8,'Engineering + Blacksmithing']
 ]
 
-supabase = createClient(SUPABASE_URL || 'https://placeholder.supabase.co', SUPABASE_ANON_KEY || 'placeholder')
+const supabase = createClient(SUPABASE_URL || "https://placeholder.supabase.co", SUPABASE_ANON_KEY || "placeholder")
 
 let user = null
 let marks = {}
