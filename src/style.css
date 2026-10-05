@@ -39,6 +39,27 @@ input[type=search]{flex-basis:100%;min-width:0}
 .chosen-filter input{width:17px;height:17px;margin:0;accent-color:#cfaa57}
 .legend{color:#aeb5c0;font-size:13px;margin:12px 0 16px}
 .user{margin-right:10px;color:#cdd3dc}
+.page-tabs{display:flex;gap:8px;margin:0 0 22px;border-bottom:1px solid #303642}
+.page-tab{border-radius:9px 9px 0 0;border-bottom:2px solid transparent;background:transparent;color:#aeb5c0}
+.page-tab.active{color:#f0d895;border-color:#cfaa57;background:#171a20}
+.page-view[hidden]{display:none}
+.profession-view{margin:0 0 32px}
+.profession-intro{margin:14px 0 22px;padding:15px;border:1px solid #66563a;border-radius:12px;background:#1b1a17;color:#e9ddc2;font-size:14px;line-height:1.55}
+.profession-intro p{margin:7px 0;color:#c8c0b1}
+.profession-intro a,.profession-source-note a,.racial-content a{color:#a9c9f2}
+.profession-group-title{margin:24px 0 6px;font-size:18px}
+.profession-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.profession-card{padding:15px;border:1px solid #303642;border-radius:13px;background:#171a20}
+.profession-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px}
+.profession-card-head h4{margin:0;color:#f0d895;font-size:16px}
+.profession-card-head span{font-size:11px;color:#aeb5c0;text-align:right}
+.profession-card>p{font-size:13px;line-height:1.55}
+.profession-facts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.profession-facts section{padding:10px;background:#101319;border-radius:9px}
+.profession-facts b,.profession-pair b{color:#e7d39c;font-size:12px}
+.profession-facts p{font-size:12px;line-height:1.5;margin:5px 0 0;color:#c4cbd5}
+.profession-pair{margin-top:10px!important}
+.profession-source-note{margin:18px 0;color:#9ca3af;font-size:12px;line-height:1.55}
 .card{background:#171a20;border:1px solid #2d333d;border-radius:14px;padding:16px;margin-bottom:10px}
 .card.chosen{border-color:#8a94a5}
 .top{display:flex;justify-content:space-between;gap:15px}
@@ -56,6 +77,14 @@ input[type=search]{flex-basis:100%;min-width:0}
 .empty-state{padding:28px 16px;text-align:center;border:1px dashed #363b45;border-radius:12px;color:#b9c0ca}
 .spec-guide{margin:0 0 10px;border:1px solid #303642;border-radius:10px;background:#12151a}
 .spec-guide summary{padding:11px 12px;color:#e3c982;cursor:pointer;font-weight:650}
+.racial-guide{margin:0 0 12px;border:1px solid #303642;border-radius:10px;background:#12151a}
+.racial-guide summary{padding:11px 12px;color:#a8c8ee;cursor:pointer;font-weight:650}
+.racial-content{padding:0 12px 12px;color:#c4cbd5;font-size:13px;line-height:1.5}
+.racial-content ul{margin:5px 0 12px;padding-left:20px}
+.racial-content li{margin:5px 0}
+.racial-content li b{color:#eff2f6}
+.racial-class-note,.priest-spells{margin:8px 0;padding:9px 10px;border-left:2px solid #7188a6;background:#1a1e25;border-radius:0 8px 8px 0}
+.racial-class-note p{margin:5px 0;color:#c4cbd5}
 .guide-content{padding:0 12px 12px;color:#c4cbd5;font-size:13px;line-height:1.5}
 .guide-content p{margin:8px 0;color:#c4cbd5}
 .guide-content b,.phase-grid b{color:#f0d895}
@@ -67,6 +96,10 @@ input[type=search]{flex-basis:100%;min-width:0}
 .plan-editor{display:grid;grid-template-columns:1fr;gap:10px;padding:16px;border:1px solid #353b46;border-radius:14px;background:#171a20}
 .plan-choice,.data-note{grid-column:1/-1}
 .plan-choice{font-weight:700;color:#f1f3f5}
+.secondary-picks{display:flex;flex-wrap:wrap;gap:8px 14px;grid-column:1/-1;margin:0;padding:10px 12px;border:1px solid #363b45;border-radius:10px}
+.secondary-picks legend{padding:0 5px;color:#cdd3dc;font-size:13px}
+.secondary-picks label{display:flex;align-items:center;gap:6px;color:#cdd3dc;font-size:13px}
+.secondary-picks input{width:17px;height:17px;margin:0;accent-color:#cfaa57}
 .plan-editor label:not(.share-choice){display:flex;flex-direction:column;gap:6px;color:#cdd3dc;font-size:13px}
 .plan-editor select,.plan-editor label input{width:100%;min-height:42px}
 .share-choice{display:flex;grid-column:1/-1;gap:8px;align-items:center;color:#cdd3dc;font-size:13px}
@@ -88,6 +121,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   .stats{grid-template-columns:repeat(3,1fr)}
   .actions button{flex:1;min-height:46px}
   .phase-grid{grid-template-columns:1fr}
+  .profession-card-head{align-items:flex-start;flex-direction:column;gap:4px}
   .plan-editor{padding:13px}
   .player-plan{align-items:flex-start}
 }
