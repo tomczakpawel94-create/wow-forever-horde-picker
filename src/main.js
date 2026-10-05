@@ -70,9 +70,9 @@ const secondaryProfessions = ['Cooking','Fishing','First Aid']
 // Starting regions used by WoW: Forever's Horde races. Marker positions are
 // approximate world-map locations; the zone names are the useful destination.
 const raceStartInfo = {
-  'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:31,y:46},
-  'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:31,y:46},
-  'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor',x:26,y:50},
+  'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:34,y:35},
+  'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:34,y:35},
+  'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor',x:22,y:48},
   'Undead':{zone:'Tirisfal Glades · Deathknell',continent:'Eastern Kingdoms',x:69,y:17},
   'Skyborne — Windshaper':{zone:'Zephras Isle',continent:'Wielkie Morze',x:51,y:37}
 }
