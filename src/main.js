@@ -57,7 +57,7 @@ const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
 
 let user = null
 let marks = {}
-let filter = {race:'', cls:'', spec:'', sort:'avg', search:'', chosenOnly:false}
+let filter = {race:'', cls:'', spec:'', role:'', sort:'avg', search:'', chosenOnly:false}
 let planSelection = null
 let playerPlans = []
 let selectedStartRace = 'Undead'
@@ -189,6 +189,7 @@ app.innerHTML=`<main class="wrap">
 <select id="race"><option value="">Wszystkie rasy</option>${races.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="cls"><option value="">Wszystkie klasy</option>${classes.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="spec"><option value="">Wszystkie specy</option>${specs.map(x=>`<option>${x}</option>`).join('')}</select>
+<select id="role" aria-label="Filtruj według roli"><option value="">Wszystkie role</option><option value="DPS">DPS</option><option value="Tank">Tank</option><option value="Healer">Healer</option><option value="Support">Support</option></select>
 <select id="sort"><option value="avg">Najwyższa ocena</option><option value="pvp">PvP</option><option value="pve">PvE</option><option value="level">Leveling</option><option value="solo">Solo / World</option><option value="end">Endgame</option></select>
 <button id="reset">Wyczyść moje wybory</button>
 <input id="search" type="search" placeholder="Szukaj rasy, klasy, specy lub profesji…" aria-label="Szukaj postaci">
@@ -288,6 +289,16 @@ function escapeHtml(value){
 return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))
 }
 
+function getGuideRoles(guide){
+  const text=(guide?.role||'').toLocaleLowerCase('pl')
+  const roles=[]
+  if(/\bdps\b/.test(text))roles.push('DPS')
+  if(text.includes('tank'))roles.push('Tank')
+  if(text.includes('healer')||text.includes('heal'))roles.push('Healer')
+  if(text.includes('wsparcie')||text.includes('support')||text.includes('totem')||text.includes('błogosławieństw'))roles.push('Support')
+  return roles
+}
+
 function getDiscordName(){
 return user?.user_metadata?.global_name||user?.user_metadata?.full_name||user?.user_metadata?.name||user?.user_metadata?.preferred_username||user?.email?.split('@')[0]||''
 }
@@ -372,7 +383,13 @@ await loadRoster()
 function render(){
 const idx={avg:3,pve:4,pvp:5,level:6,solo:7,end:8}[filter.sort]
 const query=filter.search.trim().toLocaleLowerCase('pl')
-let rows=data.filter(x=>(!filter.race||x[0]===filter.race)&&(!filter.cls||x[1]===filter.cls)&&(!filter.spec||x[2]===filter.spec))
+let rows=data.filter(x=>{
+  if(filter.race&&x[0]!==filter.race)return false
+  if(filter.cls&&x[1]!==filter.cls)return false
+  if(filter.spec&&x[2]!==filter.spec)return false
+  if(filter.role&&!getGuideRoles(specGuides[`${x[1]}|${x[2]}`]).includes(filter.role))return false
+  return true
+})
 if(query)rows=rows.filter(x=>[x[0],x[1],x[2],x[9]].some(value=>value.toLocaleLowerCase('pl').includes(query)))
 if(filter.chosenOnly)rows=rows.filter(x=>marks[x.slice(0,3).join('|')])
 rows.sort((a,b)=>b[idx]-a[idx])
@@ -384,7 +401,7 @@ return `<article class="card ${m?'chosen':''}">
 <div class="top"><div><small>${x[0]}</small><h2>${x[1]} — ${x[2]}</h2></div><strong>${x[3].toFixed(1)}<small>/10</small></strong></div>
 <button type="button" class="map-jump-button" data-map-race="${encodeURIComponent(x[0])}">📍 Pokaż start rasy</button>
 <div class="stats">${[['PvE',x[4]],['PvP',x[5]],['Level',x[6]],['Solo',x[7]],['Endgame',x[8]]].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}</div>
-<div class="prof">🛠 ${x[9]}</div>
+<div class="prof">🎭 Rola: ${getGuideRoles(guide).join(' · ')||'Do sprawdzenia'}<br>🛠 ${x[9]}</div>
 <details class="spec-guide"><summary>Rola i opis specjalizacji</summary><div class="guide-content"><p><b>Rola:</b> ${guide.role}</p><p>${guide.description}</p><div class="phase-grid"><section><b>Early game</b><p>${guide.early}</p></section><section><b>Mid game</b><p>${guide.mid}</p></section><section><b>Late game</b><p>${guide.late}</p></section></div><p><b>Mocne strony:</b> ${guide.pros}</p><p><b>Warto pamiętać:</b> ${guide.cons}</p></div></details>
 ${racialDetailsHtml(x[0],x[1])}
 <button type="button" class="plan-button" data-plan="${encodeURIComponent(k)}">Dodaj do mojego planu</button>
@@ -445,7 +462,7 @@ shell()
 document.querySelectorAll('.page-tab').forEach(button=>button.onclick=()=>switchTab(button.dataset.tab))
 renderProfessionList()
 renderStartMap()
-;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
+;['race','cls','spec','role','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[id]=e.target.value;render()})
 document.querySelector('#search').oninput=e=>{filter.search=e.target.value;render()}
 document.querySelector('#chosen-only').onchange=e=>{filter.chosenOnly=e.target.checked;render()}
 document.querySelectorAll('[data-race-select]').forEach(button=>button.onclick=()=>{
