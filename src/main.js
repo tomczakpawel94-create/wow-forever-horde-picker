@@ -57,38 +57,82 @@ const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
 
 let user = null
 let marks = {}
-let filter = {race:'', cls:'', spec:'', sort:'avg'}
+let filter = {race:'', cls:'', spec:'', sort:'avg', search:'', chosenOnly:false}
 
 const races=[...new Set(data.map(x=>x[0]))], classes=[...new Set(data.map(x=>x[1]))], specs=[...new Set(data.map(x=>x[2]))]
+
+const raceInfo={
+  'Orc':{
+    description:'Lud z Draenoru, który wyrwał się spod wpływu Płonącego Legionu. W Hordzie orki szukają wolności i honoru, a ich tradycja jest mocno związana z szamanizmem.',
+    classes:['Hunter','Mage','Rogue','Shaman','Warlock','Warrior']
+  },
+  'Undead':{
+    description:'Forsaken odzyskali wolę po wyrwaniu się spod kontroli Króla Lisza. Walczą o przetrwanie i miejsce w świecie, który często widzi w nich wyłącznie zagrożenie.',
+    classes:['Mage','Paladin','Priest','Rogue','Warlock','Warrior']
+  },
+  'Tauren':{
+    description:'Spokojny, wspólnotowy lud związany z naturą i duchowością. Taureni cenią równowagę, ale potrafią stanąć w obronie swojej ziemi i sprzymierzeńców.',
+    classes:['Druid','Hunter','Shaman','Warrior']
+  },
+  'Troll':{
+    description:'Darkspearowie dołączyli do Hordy po tym, jak orki pomogły im w potrzebie. Są zaradni i wytrwali, a ich kultura łączy walkę z pradawnymi tradycjami.',
+    classes:['Hunter','Mage','Priest','Rogue','Shaman','Warlock','Warrior']
+  },
+  'Skyborne — Windshaper':{
+    description:'Wiatrowi Skyborne dołączają do Hordy i podążają za tradycją żywiołów. Wybór tej strony otwiera im drogę szamana; mogą też być druidami, łowcami, łotrzykami i wojownikami.',
+    classes:['Druid','Hunter','Rogue','Shaman','Warrior']
+  }
+}
 
 function shell(){
 app.innerHTML=`<main class="wrap">
 <header><div><h1>⚔ WoW Forever — Horde Picker</h1><p>Wybierz swojego maina. Każdy użytkownik Discorda ma własne wybory.</p></div><div id="auth"></div></header>
+<section class="intro-section">
+  <h2 class="section-title">Horda czy Sojusz?</h2>
+  <div class="faction-grid">
+    <article class="faction-card horde-card"><span class="eyebrow">HORDA</span><h3>Siła, wolność i wspólnota</h3><p>Różne ludy łączą się, by przetrwać i samodzielnie kształtować swoją przyszłość. W tym rankingu skupiamy się na rasach Hordy.</p></article>
+    <article class="faction-card alliance-card"><span class="eyebrow">SOJUSZ</span><h3>Tradycja, obowiązek i współpraca</h3><p>Sojusz skupia królestwa i ludy, które wspólnie bronią swoich domów. Skyborne po stronie Sojuszu zostają High Order i mogą wybrać maga.</p></article>
+  </div>
+  <p class="faction-note">Frakcja wpływa na to, z kim możesz tworzyć grupy. Rasy mają własne dostępne klasy, a WoW Forever dodaje nowe połączenia.</p>
+</section>
+<section class="races-section">
+  <h2 class="section-title">Rasy Hordy</h2>
+  <p class="section-lead">Wybierz rasę, poznaj jej charakter i zobacz klasy dostępne w WoW Forever.</p>
+  <div class="race-grid">${Object.entries(raceInfo).map(([race,info])=>`<article class="race-card"><div class="race-card-heading"><h3>${race}</h3><button type="button" class="race-jump" data-race-select="${race}">Pokaż rankingi</button></div><p>${info.description}</p><div class="class-list"><span>Dostępne klasy</span><div>${info.classes.map(cls=>`<span class="class-chip">${cls}</span>`).join('')}</div></div></article>`).join('')}</div>
+</section>
+<section class="picker-section"><h2 class="section-title">Oceny klas i specjalizacji</h2><p class="section-lead">Poniżej znajdziesz oceniane zestawy rasy, klasy i specjalizacji.</p>
 <section class="toolbar">
 <select id="race"><option value="">Wszystkie rasy</option>${races.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="cls"><option value="">Wszystkie klasy</option>${classes.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="spec"><option value="">Wszystkie specy</option>${specs.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="sort"><option value="avg">Najwyższa ocena</option><option value="pvp">PvP</option><option value="pve">PvE</option><option value="level">Leveling</option><option value="solo">Solo / World</option><option value="end">Endgame</option></select>
 <button id="reset">Wyczyść moje wybory</button>
+<input id="search" type="search" placeholder="Szukaj rasy, klasy, specy lub profesji…" aria-label="Szukaj postaci">
+<label class="chosen-filter"><input id="chosen-only" type="checkbox"> Pokaż tylko moje wybory</label>
 </section>
 <div class="legend">⭐ Must play &nbsp; 🔥 Bardzo chcę &nbsp; 👍 Może być &nbsp; ❌ Odpada</div>
-<div id="summary"></div><section id="cards"></section>
+<div id="summary"></div><div id="results-count" aria-live="polite"></div><section id="cards"></section>
+</section>
 </main>`
 }
 
 function render(){
 const idx={avg:3,pve:4,pvp:5,level:6,solo:7,end:8}[filter.sort]
+const query=filter.search.trim().toLocaleLowerCase('pl')
 let rows=data.filter(x=>(!filter.race||x[0]===filter.race)&&(!filter.cls||x[1]===filter.cls)&&(!filter.spec||x[2]===filter.spec))
+if(query)rows=rows.filter(x=>[x[0],x[1],x[2],x[9]].some(value=>value.toLocaleLowerCase('pl').includes(query)))
+if(filter.chosenOnly)rows=rows.filter(x=>marks[x.slice(0,3).join('|')])
 rows.sort((a,b)=>b[idx]-a[idx])
-document.querySelector('#cards').innerHTML=rows.map(x=>{
+document.querySelector('#results-count').textContent=`Widoczne postacie: ${rows.length} z ${data.length}`
+document.querySelector('#cards').innerHTML=rows.length?rows.map(x=>{
 const k=x.slice(0,3).join('|'), m=marks[k]||''
 return `<article class="card ${m?'chosen':''}">
 <div class="top"><div><small>${x[0]}</small><h2>${x[1]} — ${x[2]}</h2></div><strong>${x[3].toFixed(1)}<small>/10</small></strong></div>
 <div class="stats">${[['PvE',x[4]],['PvP',x[5]],['Level',x[6]],['Solo',x[7]],['Endgame',x[8]]].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}</div>
 <div class="prof">🛠 ${x[9]}</div>
-<div class="actions">${['⭐','🔥','👍','❌'].map(e=>`<button class="${m===e?'active':''}" data-k="${k}" data-mark="${e}">${e}</button>`).join('')}</div>
-</article>`}).join('')
-document.querySelector('#summary').innerHTML=`<b>Moje wybory: ${Object.keys(marks).length}</b> <span>⭐ ${Object.values(marks).filter(x=>x==='⭐').length}</span> <span>🔥 ${Object.values(marks).filter(x=>x==='🔥').length}</span> <span>👍 ${Object.values(marks).filter(x=>x==='👍').length}</span>`
+<div class="actions">${[['⭐','Must play'],['🔥','Bardzo chcę'],['👍','Może być'],['❌','Odpada']].map(([e,label])=>`<button type="button" class="${m===e?'active':''}" data-k="${k}" data-mark="${e}" aria-label="${label}: ${x[0]} ${x[1]} ${x[2]}" title="${label}">${e}</button>`).join('')}</div>
+</article>`}).join(''):'<div class="empty-state">Nie znaleziono postaci. Zmień wyszukiwanie lub filtry.</div>'
+document.querySelector('#summary').innerHTML=`<b>Moje wybory: ${Object.keys(marks).length}</b> <span>⭐ ${Object.values(marks).filter(x=>x==='⭐').length}</span> <span>🔥 ${Object.values(marks).filter(x=>x==='🔥').length}</span> <span>👍 ${Object.values(marks).filter(x=>x==='👍').length}</span> <span>❌ ${Object.values(marks).filter(x=>x==='❌').length}</span>`
 document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>setMark(b.dataset.k,b.dataset.mark))
 }
 
@@ -135,6 +179,14 @@ if(login)login.onclick=async()=>{
 }
 shell()
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
+document.querySelector('#search').oninput=e=>{filter.search=e.target.value;render()}
+document.querySelector('#chosen-only').onchange=e=>{filter.chosenOnly=e.target.checked;render()}
+document.querySelectorAll('[data-race-select]').forEach(button=>button.onclick=()=>{
+  filter.race=button.dataset.raceSelect
+  document.querySelector('#race').value=filter.race
+  render()
+  document.querySelector('.picker-section').scrollIntoView({behavior:'smooth',block:'start'})
+})
 document.querySelector('#reset').onclick=async()=>{
 if(!user)return alert('Zaloguj się.')
 const {error}=await supabase.from('choices').delete().eq('user_id',user.id)
