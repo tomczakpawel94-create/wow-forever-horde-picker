@@ -61,8 +61,6 @@ let filter = {race:'', cls:'', spec:'', sort:'avg', search:'', chosenOnly:false}
 let planSelection = null
 let playerPlans = []
 let selectedStartRace = 'Undead'
-let mapZoom = 1
-let mapDrag = null
 
 const primaryProfessions = ['Alchemy','Blacksmithing','Enchanting','Engineering','Herbalism','Leatherworking','Mining','Skinning','Tailoring']
 const secondaryProfessions = ['Cooking','Fishing','First Aid']
@@ -70,11 +68,6 @@ const secondaryProfessions = ['Cooking','Fishing','First Aid']
 // Starting regions used by WoW: Forever's Horde races. Marker positions are
 // approximate world-map locations; the zone names are the useful destination.
 const raceStartInfo = {
-  'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:34,y:35},
-  'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:34,y:35},
-  'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor',x:22,y:48},
-  'Undead':{zone:'Tirisfal Glades · Deathknell',continent:'Eastern Kingdoms',x:69,y:17},
-  'Skyborne — Windshaper':{zone:'Zephras Isle',continent:'Wielkie Morze',x:51,y:37}
   'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor'},
   'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor'},
   'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor'},
@@ -214,20 +207,10 @@ app.innerHTML=`<main class="wrap">
 </section>
 </div>
 <section id="map-view" class="page-view map-view" role="tabpanel" hidden>
-  <h2 class="section-title">Gdzie zaczyna każda rasa?</h2>
-  <p class="section-lead">Wybierz rasę albo kliknij znacznik. Mapa pokazuje przybliżone położenie strefy startowej na Azeroth. Orc i Troll zaczynają w tej samej strefie.</p>
   <h2 class="section-title">Strefy startowe ras</h2>
   <p class="section-lead">Wybierz rasę, aby zobaczyć jej strefę startową. Nie pokazujemy pinezek na poglądowym podkładzie, żeby nie sugerować niedokładnej lokalizacji.</p>
   <div class="map-race-picker" id="map-race-picker"></div>
-  <div class="start-map-toolbar"><button type="button" id="map-zoom-out" aria-label="Pomniejsz mapę">−</button><button type="button" id="map-zoom-in" aria-label="Powiększ mapę">+</button><button type="button" id="map-reset">Pokaż całą mapę</button><span>Możesz też przeciągać mapę.</span></div>
-  <div class="start-map-viewport" id="start-map-viewport" aria-label="Interaktywna mapa świata Azeroth">
-    <div class="start-map-image" id="start-map-image" role="img" aria-label="Mapa świata Azeroth, Kalimdor po lewej i Eastern Kingdoms po prawej">
-      <span class="map-continent kalimdor-label">KALIMDOR</span><span class="map-continent kingdoms-label">EASTERN KINGDOMS</span>
-      <div id="start-map-markers"></div>
-    </div>
-  </div>
   <article class="start-location-card" id="start-location-card" aria-live="polite"></article>
-  <p class="profession-source-note">Podkład przedstawia klasyczną mapę świata; znaczniki wskazują przybliżone położenie stref, a nie dokładny punkt wejścia. Windshaperowie zaczynają na Zephras Isle, osobnej wyspie WoW: Forever. <a href="https://forever.azerpug.com/" target="_blank" rel="noreferrer">Interaktywna mapa stref Forever</a> · <a href="https://www.warcrafttavern.com/community/art-resources/high-resolution-terrain-maps-of-azeroth" target="_blank" rel="noreferrer">Źródło mapy świata</a>.</p>
   <p class="profession-source-note">Orc i Troll zaczynają w Durotarze; Tauren w Mulgore. Dokładne krainy, miasta i zakresy poziomów sprawdzisz w pełnym atlasie poniżej.</p>
   <section class="profession-intro full-atlas-intro"><h3>Pełny atlas świata WoW: Forever</h3><p>Przeglądaj krainy, sprawdzaj ich orientacyjne przedziały poziomów, miasta, lochy, flight masterów i połączenia statków. Atlas ma filtr poziomu postaci oraz wyszukiwarkę.</p><p><a href="https://theforeverera.com/en/map/" target="_blank" rel="noreferrer">Otwórz pełny interaktywny atlas WoW: Forever ↗</a></p></section>
 </section>
@@ -269,20 +252,12 @@ document.querySelectorAll('.page-tab').forEach(button=>{
 
 function renderStartMap(){
   const picker=document.querySelector('#map-race-picker')
-  const markers=document.querySelector('#start-map-markers')
   const detail=document.querySelector('#start-location-card')
-  if(!picker||!markers||!detail)return
   if(!picker||!detail)return
   picker.innerHTML=Object.keys(raceStartInfo).map(race=>`<button type="button" class="map-race-chip ${selectedStartRace===race?'active':''}" data-start-race="${escapeHtml(race)}">${escapeHtml(race)}</button>`).join('')
-  markers.innerHTML=Object.entries(raceStartInfo).map(([race,info])=>`<button type="button" class="map-marker ${selectedStartRace===race?'selected':''}" style="left:${info.x}%;top:${info.y}%" data-start-race="${escapeHtml(race)}" aria-label="${escapeHtml(race)} — ${escapeHtml(info.zone)}" title="${escapeHtml(race)}: ${escapeHtml(info.zone)}"><span>●</span></button>`).join('')
   const info=raceStartInfo[selectedStartRace]
   detail.innerHTML=`<small>START: ${escapeHtml(info.continent)}</small><h3>${escapeHtml(selectedStartRace)}</h3><p>${escapeHtml(info.zone)}</p><p>Wybór klasy i specjalizacji nie zmienia strefy startowej tej rasy.</p>`
   document.querySelectorAll('[data-start-race]').forEach(button=>button.onclick=()=>{selectedStartRace=button.dataset.startRace;renderStartMap()})
-}
-
-function applyMapZoom(){
-  const map=document.querySelector('#start-map-image')
-  if(map)map.style.transform=`translate(${mapDrag?.x||0}px,${mapDrag?.y||0}px) scale(${mapZoom})`
 }
 
 function selectMapRace(race){
@@ -454,13 +429,6 @@ shell()
 document.querySelectorAll('.page-tab').forEach(button=>button.onclick=()=>switchTab(button.dataset.tab))
 renderProfessionList()
 renderStartMap()
-document.querySelector('#map-zoom-in').onclick=()=>{mapZoom=Math.min(2.5,mapZoom+.2);applyMapZoom()}
-document.querySelector('#map-zoom-out').onclick=()=>{mapZoom=Math.max(1,mapZoom-.2);if(mapZoom===1)mapDrag=null;applyMapZoom()}
-document.querySelector('#map-reset').onclick=()=>{mapZoom=1;mapDrag=null;applyMapZoom()}
-const mapViewport=document.querySelector('#start-map-viewport')
-mapViewport.addEventListener('pointerdown',event=>{if(event.target.closest('.map-marker'))return;mapViewport.setPointerCapture(event.pointerId);mapDrag={startX:event.clientX,startY:event.clientY,x:mapDrag?.x||0,y:mapDrag?.y||0}})
-mapViewport.addEventListener('pointermove',event=>{if(!mapDrag||mapDrag.startX===undefined)return;const bounds=mapViewport.getBoundingClientRect();mapDrag.x=Math.max(-bounds.width*.45,Math.min(bounds.width*.45,(mapDrag.x||0)+event.movementX));mapDrag.y=Math.max(-bounds.height*.45,Math.min(bounds.height*.45,(mapDrag.y||0)+event.movementY));applyMapZoom()})
-mapViewport.addEventListener('pointerup',()=>{if(mapDrag){delete mapDrag.startX;delete mapDrag.startY}})
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
 document.querySelector('#search').oninput=e=>{filter.search=e.target.value;render()}
 document.querySelector('#chosen-only').onchange=e=>{filter.chosenOnly=e.target.checked;render()}
