@@ -95,7 +95,7 @@ render()
 }
 async function auth(){
 if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return
-const {data}=await supabase.auth.getUser(); user=data.user||null
+const {data}=await supabase.auth.getSession(); user=data.session?.user||null
 const a=document.querySelector('#auth')
 a.innerHTML=user?`<span class="user">${user.user_metadata?.full_name||user.email||'Discord user'}</span><button id="logout">Wyloguj</button>`:`<button id="login">🔵 Zaloguj przez Discord</button>`
 if(document.querySelector('#login'))document.querySelector('#login').onclick=()=>supabase.auth.signInWithOAuth({provider:'discord',options:{redirectTo:location.origin}})
