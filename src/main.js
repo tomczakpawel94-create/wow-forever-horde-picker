@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import './style.css'
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 // Prefer Supabase's current publishable key; keep the legacy anon variable
 // working for projects that have not migrated yet.
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
-
 const app = document.querySelector('#app')
-
 const data = [
   ['Troll','Warlock','Affliction',9.6,9.7,9.8,8.0,9.1,9.6,'Engineering + Tailoring'],
   ['Undead','Warlock','Affliction',9.5,9.6,9.7,8.1,9.1,9.5,'Engineering + Tailoring'],
@@ -43,7 +40,6 @@ const data = [
   ['Orc','Warrior','Arms',9.0,8.8,9.4,7.8,8.4,8.8,'Engineering + Blacksmithing'],
   ['Troll','Warrior','Arms',9.0,8.8,9.4,7.8,8.4,8.8,'Engineering + Blacksmithing']
 ]
-
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -54,16 +50,25 @@ const supabase = SUPABASE_URL && SUPABASE_ANON_KEY
       }
     })
   : null
-
 let user = null
 let marks = {}
 let filter = {race:'', cls:'', spec:'', sort:'avg', search:'', chosenOnly:false}
 let planSelection = null
 let playerPlans = []
-
+let selectedStartRace = 'Undead'
+let mapZoom = 1
+let mapDrag = null
 const primaryProfessions = ['Alchemy','Blacksmithing','Enchanting','Engineering','Herbalism','Leatherworking','Mining','Skinning','Tailoring']
 const secondaryProfessions = ['Cooking','Fishing','First Aid']
-
+// Starting regions used by WoW: Forever's Horde races. Marker positions are
+// approximate world-map locations; the zone names are the useful destination.
+const raceStartInfo = {
+  'Orc':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:31,y:46},
+  'Troll':{zone:'Durotar · Valley of Trials',continent:'Kalimdor',x:31,y:46},
+  'Tauren':{zone:'Mulgore · Camp Narache',continent:'Kalimdor',x:26,y:50},
+  'Undead':{zone:'Tirisfal Glades · Deathknell',continent:'Eastern Kingdoms',x:69,y:17},
+  'Skyborne — Windshaper':{zone:'Zephras Isle',continent:'Wielkie Morze',x:51,y:37}
+}
 const professionInfo = {
   Alchemy:{type:'Główna · wytwarzanie',what:'Tworzy mikstury leczenia i many, eliksiry oraz inne zużywalne preparaty. Przydaje się przed trudną walką, w dungeonach, raidach i PvP; część recept zdobywa się u trenerów, a część z łupów lub reputacji.',materials:'Zioła zbierane z roślinnych węzłów przez Herbalism, fiolki i składniki kupowane u vendorów oraz rzadkie reagenty z potworów.',how:'Ucz się recept u Alchemy trainerów. Zbieraj zioła samodzielnie albo kupuj je od innych graczy; rób mikstury, których będziesz używać lub które dobrze schodzą na Auction House.',good:'Dobra dla każdej klasy i roli: leczenie, mana, odporności i wzmocnienia. Herbalism ogranicza koszty i zapewnia własne składniki.',pair:'Herbalism'},
   Blacksmithing:{type:'Główna · wytwarzanie',what:'Wykuwa metalowe zbroje, tarcze, bronie i użytkowe przedmioty. Recepty obejmują różne typy ekwipunku, więc przed inwestowaniem sprawdź, czy interesujące Cię wzory pasują do klasy.',materials:'Rudy i kamień z Mining, przetopione sztabki, kamienie szlifierskie oraz część skór, barwników i reagentów kupowanych u vendorów.',how:'Wydobywaj rudę, przetapiaj ją w sztabki u kuźni, a następnie wytwarzaj przedmioty u kowadła. Trenerzy i schematy uczą kolejnych recept.',good:'Najbardziej naturalna dla Warrior i Paladin, a także dla graczy, którzy chcą kuć broń i zbroje lub sprzedawać je. Mining to podstawowe źródło metalu.',pair:'Mining'},
@@ -78,7 +83,6 @@ const professionInfo = {
   Fishing:{type:'Poboczna · zbieranie',what:'Łowi ryby z wody, a także inne przedmioty i materiały zależne od miejsca. Ryby można sprzedać, ugotować albo wykorzystać w receptach.',materials:'Ryby i inne połowy z wód; wędka, przynęty lub lury mogą pomagać w łowieniu. Rodzaj połowu zależy od strefy i łowiska.',how:'Naucz się Fishing, kup wędkę, wyposaż ją i łów w dostępnym miejscu z brzegu. Podnoś skill częstymi połowami; używaj przynęt, gdy potrzebujesz lepszego poziomu łowienia.',good:'Dobra dla graczy, którzy chcą zbierać składniki do Cooking, szukać konkretnych ryb lub spokojnie zarabiać. Cooking jest naturalnym uzupełnieniem.',pair:'Cooking'},
   'First Aid':{type:'Poboczna · wsparcie',what:'Wytwarza bandage z tkanin, by leczyć siebie lub sojuszników bez zużywania many. Wymaga chwili bez otrzymywania obrażeń, więc najlepiej używać jej po odsunięciu się od walki.',materials:'Cloth z humanoidów; w klasycznym zestawie także venom sacs do wytwarzania anti-venom. Recepty i szczegóły Forever mogą się różnić.',how:'Zbieraj cloth podczas questów, ucz się kolejnych bandage u First Aid trainerów lub z książek i używaj ich poza bezpośrednim ostrzałem.',good:'Bardzo pomocna dla klas bez własnego leczenia oraz jako dodatkowy sposób na oszczędzanie jedzenia i many. Nie zajmuje miejsca głównej profesji.',pair:'Brak wymaganej pary'}
 }
-
 // Guide text is editorial advice. The ratings and the listed builds remain the site's existing data.
 const specGuides = {
   'Warlock|Affliction': {role:'DPS — ranged, damage over time', description:'Nakłada klątwy i efekty obrażeń w czasie, a potem utrzymuje przeciwników pod presją. Dobrze radzi sobie z długimi walkami i solo dzięki petowi oraz narzędziom kontroli.', early:'Sprawne questowanie; pet pomaga utrzymać przeciwników z dala.', mid:'Rośnie siła klątw i kontrola w dungeonach oraz PvP.', late:'Mocny w długich walkach i na wielu celach; wymaga pilnowania efektów.', pros:'Samowystarczalność, kontrola i stałe obrażenia.', cons:'Przygotowanie efektów zajmuje czas; obrażenia nie zawsze są natychmiastowe.'},
@@ -99,9 +103,7 @@ const specGuides = {
   'Priest|Discipline': {role:'Healer / wsparcie — tarcze i prewencja', description:'Chroni grupę i leczy, zanim obrażenia staną się krytyczne. Wymaga przewidywania nadchodzących ciosów.', early:'Dobre narzędzia ochronne, ważne gospodarowanie maną.', mid:'Wsparcie w dungeonach przez tarcze i leczenie.', late:'Przydatny, gdy grupa potrzebuje prewencji i stabilizacji.', pros:'Tarcze, leczenie i wsparcie grupy.', cons:'Wymaga przewidywania i sprawnego zarządzania maną.'},
   'Warrior|Arms': {role:'DPS — melee, ciężkie uderzenia i kontrola', description:'Wolniejsze, mocne ataki wręcz i narzędzia do pojedynków. Dobrze pasuje do graczy lubiących bezpośrednią walkę.', early:'Wymaga dobrego doboru broni i ostrożnego prowadzenia walk.', mid:'Silne pojedyncze uderzenia i użyteczność w PvP.', late:'Rośnie z jakością broni; sprawdź aktualne talenty i zmiany Forever.', pros:'Mocne uderzenia i dobra kontrola przeciwnika.', cons:'Zależność od broni i słabsza mobilność w części starć.'}
 }
-
 const races=[...new Set(data.map(x=>x[0]))], classes=[...new Set(data.map(x=>x[1]))], specs=[...new Set(data.map(x=>x[2]))]
-
 const raceInfo={
   'Orc':{
     description:'Pochodzą z Draenoru. Ten lud o szamańskich korzeniach został zniewolony przez Płonący Legion, ale odzyskał wolność i dziś walczy o honor oraz własne miejsce na Azeroth. Ich historia łączy surową wojowniczość z więzią z żywiołami.',
@@ -149,11 +151,10 @@ const raceInfo={
     passive:[['Wind Blessed','Zwiększa Haste o 1%.'],['Elemental Insight','Zwiększa obrażenia zadawane Elementals o 5%.']]
   }
 }
-
 function shell(){
 app.innerHTML=`<main class="wrap">
 <header><div><h1>⚔ WoW Forever — Horde Picker</h1><p>Wybierz swojego maina. Każdy użytkownik Discorda ma własne wybory.</p></div><div id="auth"></div></header>
-<nav class="page-tabs" role="tablist" aria-label="Sekcje strony"><button type="button" class="page-tab active" data-tab="picker-view" role="tab" aria-selected="true">Postacie</button><button type="button" class="page-tab" data-tab="profession-view" role="tab" aria-selected="false">Profesje</button></nav>
+<nav class="page-tabs" role="tablist" aria-label="Sekcje strony"><button type="button" class="page-tab active" data-tab="picker-view" role="tab" aria-selected="true">Postacie</button><button type="button" class="page-tab" data-tab="profession-view" role="tab" aria-selected="false">Profesje</button><button type="button" class="page-tab" data-tab="map-view" role="tab" aria-selected="false">Mapa startów</button></nav>
 <div id="picker-view" class="page-view">
 <section class="intro-section">
   <h2 class="section-title">Horda czy Alliance?</h2>
@@ -202,6 +203,20 @@ app.innerHTML=`<main class="wrap">
   <div id="player-roster" class="player-roster"></div>
 </section>
 </div>
+<section id="map-view" class="page-view map-view" role="tabpanel" hidden>
+  <h2 class="section-title">Gdzie zaczyna każda rasa?</h2>
+  <p class="section-lead">Wybierz rasę albo kliknij znacznik. Mapa pokazuje przybliżone położenie strefy startowej na Azeroth. Orc i Troll zaczynają w tej samej strefie.</p>
+  <div class="map-race-picker" id="map-race-picker"></div>
+  <div class="start-map-toolbar"><button type="button" id="map-zoom-out" aria-label="Pomniejsz mapę">−</button><button type="button" id="map-zoom-in" aria-label="Powiększ mapę">+</button><button type="button" id="map-reset">Pokaż całą mapę</button><span>Możesz też przeciągać mapę.</span></div>
+  <div class="start-map-viewport" id="start-map-viewport" aria-label="Interaktywna mapa świata Azeroth">
+    <div class="start-map-image" id="start-map-image" role="img" aria-label="Mapa świata Azeroth, Kalimdor po lewej i Eastern Kingdoms po prawej">
+      <span class="map-continent kalimdor-label">KALIMDOR</span><span class="map-continent kingdoms-label">EASTERN KINGDOMS</span>
+      <div id="start-map-markers"></div>
+    </div>
+  </div>
+  <article class="start-location-card" id="start-location-card" aria-live="polite"></article>
+  <p class="profession-source-note">Podkład przedstawia klasyczną mapę świata; znaczniki wskazują przybliżone położenie stref, a nie dokładny punkt wejścia. Windshaperowie zaczynają na Zephras Isle, osobnej wyspie WoW: Forever. <a href="https://forever.azerpug.com/" target="_blank" rel="noreferrer">Interaktywna mapa stref Forever</a> · <a href="https://www.warcrafttavern.com/community/art-resources/high-resolution-terrain-maps-of-azeroth" target="_blank" rel="noreferrer">Źródło mapy świata</a>.</p>
+</section>
 <section id="profession-view" class="page-view profession-view" role="tabpanel" hidden>
   <h2 class="section-title">Profesje w WoW: Forever</h2>
   <p class="section-lead">Główne profesje zbierają materiały lub wytwarzają przedmioty. Poboczne możesz rozwijać obok nich i nie zajmują dwóch głównych miejsc.</p>
@@ -216,7 +231,6 @@ app.innerHTML=`<main class="wrap">
 </section>
 </main>`
 }
-
 function renderProfessionList(){
 const renderGroup=(names,target)=>{
 const container=document.querySelector(target)
@@ -228,7 +242,6 @@ container.innerHTML=names.map(name=>{
 renderGroup(primaryProfessions,'#primary-profession-list')
 renderGroup(secondaryProfessions,'#secondary-profession-list')
 }
-
 function switchTab(tabId){
 document.querySelectorAll('.page-view').forEach(view=>{view.hidden=view.id!==tabId})
 document.querySelectorAll('.page-tab').forEach(button=>{
@@ -237,15 +250,34 @@ document.querySelectorAll('.page-tab').forEach(button=>{
   button.setAttribute('aria-selected',String(active))
 })
 }
-
+function renderStartMap(){
+  const picker=document.querySelector('#map-race-picker')
+  const markers=document.querySelector('#start-map-markers')
+  const detail=document.querySelector('#start-location-card')
+  if(!picker||!markers||!detail)return
+  picker.innerHTML=Object.keys(raceStartInfo).map(race=>`<button type="button" class="map-race-chip ${selectedStartRace===race?'active':''}" data-start-race="${escapeHtml(race)}">${escapeHtml(race)}</button>`).join('')
+  markers.innerHTML=Object.entries(raceStartInfo).map(([race,info])=>`<button type="button" class="map-marker ${selectedStartRace===race?'selected':''}" style="left:${info.x}%;top:${info.y}%" data-start-race="${escapeHtml(race)}" aria-label="${escapeHtml(race)} — ${escapeHtml(info.zone)}" title="${escapeHtml(race)}: ${escapeHtml(info.zone)}"><span>●</span></button>`).join('')
+  const info=raceStartInfo[selectedStartRace]
+  detail.innerHTML=`<small>START: ${escapeHtml(info.continent)}</small><h3>${escapeHtml(selectedStartRace)}</h3><p>${escapeHtml(info.zone)}</p><p>Wybór klasy i specjalizacji nie zmienia strefy startowej tej rasy.</p>`
+  document.querySelectorAll('[data-start-race]').forEach(button=>button.onclick=()=>{selectedStartRace=button.dataset.startRace;renderStartMap()})
+}
+function applyMapZoom(){
+  const map=document.querySelector('#start-map-image')
+  if(map)map.style.transform=`translate(${mapDrag?.x||0}px,${mapDrag?.y||0}px) scale(${mapZoom})`
+}
+function selectMapRace(race){
+  if(!raceStartInfo[race])return
+  selectedStartRace=race
+  switchTab('map-view')
+  renderStartMap()
+  document.querySelector('#map-view')?.scrollIntoView({behavior:'smooth',block:'start'})
+}
 function escapeHtml(value){
 return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))
 }
-
 function getDiscordName(){
 return user?.user_metadata?.global_name||user?.user_metadata?.full_name||user?.user_metadata?.name||user?.user_metadata?.preferred_username||user?.email?.split('@')[0]||''
 }
-
 function racialDetailsHtml(race,cls=''){
 const info=raceInfo[race]
 if(!info)return ''
@@ -255,7 +287,6 @@ const classDifferences=!cls&&info.classNotes?[...new Set(Object.values(info.clas
 const priestSpells=(!cls||cls==='Priest')?info.priestSpells:null
 return `<details class="racial-guide"><summary>Umiejętności rasy ${escapeHtml(race)}</summary><div class="racial-content"><b>Aktywne</b><ul>${list(info.active)}</ul><b>Pasywne</b><ul>${list(info.passive)}</ul>${classNote?`<p class="racial-class-note"><b>Dla klasy ${escapeHtml(cls)}:</b> ${escapeHtml(classNote)}</p>`:''}${classDifferences.length?`<div class="racial-class-note"><b>Efekt zależny od klasy</b>${classDifferences.map(note=>`<p>${escapeHtml(note)}</p>`).join('')}</div>`:''}${priestSpells?`<div class="priest-spells"><b>Zaklęcia tylko dla Priest tej rasy</b><ul>${list(priestSpells)}</ul></div>`:''}<p class="data-note">Nie wszystkie rasowe skille są dostępne od 1. poziomu; dokładny poziom i pełny tooltip sprawdź u trenera lub w księdze zaklęć. Efekty odczytano z klienta beta; mogą się zmienić. <a href="https://wowforeverhq.com/racials/" target="_blank" rel="noreferrer">Rasowe umiejętności z bety</a> · <a href="https://theforeverera.com/en/races/" target="_blank" rel="noreferrer">zmiany i zależności klasowe</a> · <a href="https://worldofwarcraft.blizzard.com/en-us/news/24303313" target="_blank" rel="noreferrer">Blizzard o zmianach</a>.</p></div></details>`
 }
-
 function showPlanEditor(characterKey){
 planSelection=data.find(row=>row.slice(0,3).join('|')===characterKey)||null
 const choice=document.querySelector('#plan-choice')
@@ -269,7 +300,6 @@ document.querySelector('#plan-public').checked=existing?.is_public??true
 document.querySelectorAll('[data-secondary-profession]').forEach(input=>{input.checked=(existing?.secondary_professions||[]).includes(input.value)})
 document.querySelector('#plan-editor').scrollIntoView({behavior:'smooth',block:'center'})
 }
-
 function renderRoster(){
 const list=document.querySelector('#player-roster')
 const status=document.querySelector('#roster-status')
@@ -288,7 +318,6 @@ list.innerHTML=playerPlans.map(plan=>{
 }).join('')
 list.querySelectorAll('[data-remove-plan]').forEach(button=>button.onclick=()=>deletePlan(decodeURIComponent(button.dataset.removePlan)))
 }
-
 async function loadRoster(){
 if(!supabase){renderRoster();return}
 const {data:rows,error}=await supabase.from('player_plans').select('user_id,character_key,display_name,profession_one,profession_two,is_public,updated_at').order('updated_at',{ascending:false})
@@ -303,7 +332,6 @@ if(error){
 playerPlans=rows||[]
 renderRoster()
 }
-
 async function savePlan(){
 if(!user){alert('Zaloguj się przez Discord, aby dodać plan.');return}
 if(!planSelection)return
@@ -319,14 +347,12 @@ if(error){console.error('SAVE PLAYER PLAN ERROR:',error);alert('Nie udało się 
 await loadRoster()
  document.querySelector('#plans-section')?.scrollIntoView({behavior:'smooth',block:'start'})
 }
-
 async function deletePlan(characterKey){
 if(!user)return
 const {error}=await supabase.from('player_plans').delete().eq('user_id',user.id).eq('character_key',characterKey)
 if(error){console.error('DELETE PLAYER PLAN ERROR:',error);alert('Nie udało się usunąć planu.');return}
 await loadRoster()
 }
-
 function render(){
 const idx={avg:3,pve:4,pvp:5,level:6,solo:7,end:8}[filter.sort]
 const query=filter.search.trim().toLocaleLowerCase('pl')
@@ -340,6 +366,7 @@ const k=x.slice(0,3).join('|'), m=marks[k]||''
 const guide=specGuides[`${x[1]}|${x[2]}`]||{role:'Rola zależy od wybranej specjalizacji',description:'Opis tej kombinacji jest w przygotowaniu.',early:'Sprawdź aktualne umiejętności i talenty w grze.',mid:'Sprawdź aktualne umiejętności i talenty w grze.',late:'Sprawdź aktualne zmiany WoW: Forever.',pros:'Do uzupełnienia.',cons:'Do uzupełnienia.'}
 return `<article class="card ${m?'chosen':''}">
 <div class="top"><div><small>${x[0]}</small><h2>${x[1]} — ${x[2]}</h2></div><strong>${x[3].toFixed(1)}<small>/10</small></strong></div>
+<button type="button" class="map-jump-button" data-map-race="${encodeURIComponent(x[0])}">📍 Pokaż start rasy</button>
 <div class="stats">${[['PvE',x[4]],['PvP',x[5]],['Level',x[6]],['Solo',x[7]],['Endgame',x[8]]].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}</div>
 <div class="prof">🛠 ${x[9]}</div>
 <details class="spec-guide"><summary>Rola i opis specjalizacji</summary><div class="guide-content"><p><b>Rola:</b> ${guide.role}</p><p>${guide.description}</p><div class="phase-grid"><section><b>Early game</b><p>${guide.early}</p></section><section><b>Mid game</b><p>${guide.mid}</p></section><section><b>Late game</b><p>${guide.late}</p></section></div><p><b>Mocne strony:</b> ${guide.pros}</p><p><b>Warto pamiętać:</b> ${guide.cons}</p></div></details>
@@ -350,8 +377,8 @@ ${racialDetailsHtml(x[0],x[1])}
 document.querySelector('#summary').innerHTML=`<b>Moje wybory: ${Object.keys(marks).length}</b> <span>⭐ ${Object.values(marks).filter(x=>x==='⭐').length}</span> <span>🔥 ${Object.values(marks).filter(x=>x==='🔥').length}</span> <span>👍 ${Object.values(marks).filter(x=>x==='👍').length}</span> <span>❌ ${Object.values(marks).filter(x=>x==='❌').length}</span>`
 document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>setMark(b.dataset.k,b.dataset.mark))
 document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>showPlanEditor(decodeURIComponent(b.dataset.plan)))
+document.querySelectorAll('[data-map-race]').forEach(b=>b.onclick=()=>selectMapRace(decodeURIComponent(b.dataset.mapRace)))
 }
-
 async function loadMarks(){
 if(!user){marks={};render();return}
 const {data,error}=await supabase.from('choices').select('character_key,mark').eq('user_id',user.id)
@@ -400,6 +427,14 @@ if(nameInput&&!nameInput.value)nameInput.value=getDiscordName()
 shell()
 document.querySelectorAll('.page-tab').forEach(button=>button.onclick=()=>switchTab(button.dataset.tab))
 renderProfessionList()
+renderStartMap()
+document.querySelector('#map-zoom-in').onclick=()=>{mapZoom=Math.min(2.5,mapZoom+.2);applyMapZoom()}
+document.querySelector('#map-zoom-out').onclick=()=>{mapZoom=Math.max(1,mapZoom-.2);if(mapZoom===1)mapDrag=null;applyMapZoom()}
+document.querySelector('#map-reset').onclick=()=>{mapZoom=1;mapDrag=null;applyMapZoom()}
+const mapViewport=document.querySelector('#start-map-viewport')
+mapViewport.addEventListener('pointerdown',event=>{if(event.target.closest('.map-marker'))return;mapViewport.setPointerCapture(event.pointerId);mapDrag={startX:event.clientX,startY:event.clientY,x:mapDrag?.x||0,y:mapDrag?.y||0}})
+mapViewport.addEventListener('pointermove',event=>{if(!mapDrag||mapDrag.startX===undefined)return;const bounds=mapViewport.getBoundingClientRect();mapDrag.x=Math.max(-bounds.width*.45,Math.min(bounds.width*.45,(mapDrag.x||0)+event.movementX));mapDrag.y=Math.max(-bounds.height*.45,Math.min(bounds.height*.45,(mapDrag.y||0)+event.movementY));applyMapZoom()})
+mapViewport.addEventListener('pointerup',()=>{if(mapDrag){delete mapDrag.startX;delete mapDrag.startY}})
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
 document.querySelector('#search').oninput=e=>{filter.search=e.target.value;render()}
 document.querySelector('#chosen-only').onchange=e=>{filter.chosenOnly=e.target.checked;render()}
@@ -419,10 +454,8 @@ document.querySelector('#save-plan').onclick=savePlan
 renderAuth()
 render()
 renderRoster()
-
 async function initialize(){
   if(!supabase)return
-
   // Supabase normally processes the OAuth URL itself. This fallback also
   // handles an implicit-flow callback if the URL still contains both tokens.
   const hash=new URLSearchParams(window.location.hash.slice(1))
@@ -441,7 +474,6 @@ async function initialize(){
   renderAuth()
   await loadMarks()
   await loadRoster()
-
   // Keep this callback synchronous; Supabase warns against awaiting auth calls
   // from inside onAuthStateChange callbacks.
   supabase.auth.onAuthStateChange((_event,session)=>{
@@ -451,7 +483,6 @@ async function initialize(){
     void loadRoster()
   })
 }
-
 void initialize().catch(error=>{
   console.error('APP INITIALIZATION ERROR:',error)
   const a=document.querySelector('#auth')
