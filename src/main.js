@@ -64,6 +64,21 @@ let playerPlans = []
 const primaryProfessions = ['Alchemy','Blacksmithing','Enchanting','Engineering','Herbalism','Leatherworking','Mining','Skinning','Tailoring']
 const secondaryProfessions = ['Cooking','Fishing','First Aid']
 
+const professionInfo = {
+  Alchemy:{type:'Główna · wytwarzanie',what:'Tworzy mikstury leczenia i many, eliksiry oraz inne zużywalne preparaty. Przydaje się przed trudną walką, w dungeonach, raidach i PvP; część recept zdobywa się u trenerów, a część z łupów lub reputacji.',materials:'Zioła zbierane z roślinnych węzłów przez Herbalism, fiolki i składniki kupowane u vendorów oraz rzadkie reagenty z potworów.',how:'Ucz się recept u Alchemy trainerów. Zbieraj zioła samodzielnie albo kupuj je od innych graczy; rób mikstury, których będziesz używać lub które dobrze schodzą na Auction House.',good:'Dobra dla każdej klasy i roli: leczenie, mana, odporności i wzmocnienia. Herbalism ogranicza koszty i zapewnia własne składniki.',pair:'Herbalism'},
+  Blacksmithing:{type:'Główna · wytwarzanie',what:'Wykuwa metalowe zbroje, tarcze, bronie i użytkowe przedmioty. Recepty obejmują różne typy ekwipunku, więc przed inwestowaniem sprawdź, czy interesujące Cię wzory pasują do klasy.',materials:'Rudy i kamień z Mining, przetopione sztabki, kamienie szlifierskie oraz część skór, barwników i reagentów kupowanych u vendorów.',how:'Wydobywaj rudę, przetapiaj ją w sztabki u kuźni, a następnie wytwarzaj przedmioty u kowadła. Trenerzy i schematy uczą kolejnych recept.',good:'Najbardziej naturalna dla Warrior i Paladin, a także dla graczy, którzy chcą kuć broń i zbroje lub sprzedawać je. Mining to podstawowe źródło metalu.',pair:'Mining'},
+  Enchanting:{type:'Główna · wytwarzanie',what:'Nakłada trwałe zaklęcia na broń i elementy ekwipunku, poprawiając ich statystyki lub użyteczność. Może też rozkładać magiczne przedmioty na składniki potrzebne do kolejnych enchantów.',materials:'Dust, essences i shards uzyskiwane przez disenchanting magicznych przedmiotów; specjalne rods oraz dodatkowe reagenty.',how:'Zbieraj niepotrzebne zielone, niebieskie i lepsze przedmioty, rozkładaj je umiejętnością disenchanting, a z uzyskanych składników ucz się i wykonuj enchanty. Rods wymagają osobnych recept i materiałów.',good:'Przydatna każdej klasie, bo enchanty wzmacniają ekwipunek. Dobrze łączy się z Tailoring, która wytwarza dużo materiału i przedmiotów do disenchantingu; może być kosztowna bez dostępu do łupów.',pair:'Tailoring'},
+  Engineering:{type:'Główna · wytwarzanie',what:'Tworzy gadżety, ładunki wybuchowe, urządzenia defensywne i narzędzia do eksploracji. W wielu sytuacjach daje taktyczne możliwości, których nie zapewniają zwykłe statystyki.',materials:'Rudy, sztabki i kamień z Mining, a także tkaniny, skóry, części mechaniczne i reagenty kupowane lub zdobywane z potworów.',how:'Wydobywaj i przetapiaj materiały, twórz komponenty, a potem składaj z nich urządzenia. Schematy pochodzą od trenerów, vendorów, potworów i innych źródeł w świecie.',good:'Szczególnie atrakcyjna do PvP, solo i dla graczy lubiących narzędzia sytuacyjne. Mining dostarcza większości podstawowych składników.',pair:'Mining'},
+  Herbalism:{type:'Główna · zbieranie',what:'Pozwala wykrywać i zbierać zioła rosnące w świecie. Zioła są głównym składnikiem Alchemy i często mają wartość handlową.',materials:'Zbierasz rośliny bezpośrednio z węzłów na łąkach, w lasach, na mokradłach i w innych strefach. Wymagany poziom Herbalism zależy od rośliny.',how:'Naucz się umiejętności u Herbalism trainer, włącz śledzenie ziół na minimapie i zbieraj rośliny w strefach odpowiednich do swojego skillu. Sprzedawaj nadwyżki lub przerabiaj je na mikstury.',good:'Świetne źródło złota podczas levelowania i naturalna para do Alchemy. Taureni mają rasową Cultivation, która daje dodatkową możliwość zbierania ziół.',pair:'Alchemy'},
+  Leatherworking:{type:'Główna · wytwarzanie',what:'Wyrabia skórzane zbroje, część kolczug, pancerze ochronne i inne przedmioty ze skór. Dostępne recepty zależą od poziomu umiejętności i wersji gry.',materials:'Leather scraps, skóry i hides ze Skinning; dodatkowo nici, barwniki, sól i inne materiały od vendorów lub z łupów.',how:'Oskóruj zabite, możliwe do oskórowania bestie albo kup skóry. Przerabiaj niższe skóry w wyższe materiały, gdy recepty tego wymagają, i twórz elementy zbroi oraz ulepszenia.',good:'Pasuje tematycznie i praktycznie do Rogue, Hunter i Druid; może też wspierać część Shaman w zbroi mail. Skinning zapewnia własny materiał.',pair:'Skinning'},
+  Mining:{type:'Główna · zbieranie',what:'Wydobywa rudę, kamień i niektóre rzadkie materiały ze złóż. Ruda może być sprzedana albo przetopiona w sztabki dla profesji wytwórczych.',materials:'Złoża rozmieszczone w świecie. Potrzebujesz odpowiedniego Mining skillu i kilofa; wymagany poziom zależy od złoża.',how:'Naucz się Mining u trenera, miej Mining Pick, włącz śledzenie minerałów i szukaj żył w górach, jaskiniach oraz przy klifach. Przetapiaj rudę przy kuźni.',good:'Bardzo przydatna ekonomicznie; dostarcza składników Blacksmithing i Engineering. Dobra dla graczy, którzy chcą sprzedawać surowce.',pair:'Blacksmithing lub Engineering'},
+  Skinning:{type:'Główna · zbieranie',what:'Zdejmuje skóry i hides z pokonanych, oskórowywanych stworzeń. Materiał jest podstawą Leatherworking, a część skór można sprzedać.',materials:'Skóry z bestii i innych stworzeń oznaczonych jako możliwe do oskórowania. Najpierw trzeba zabić i ograbić zwierzę.',how:'Naucz się Skinning u trenera, miej wolne miejsce w torbach i użyj umiejętności na zwłokach po ich ograbieniu. Poziom trudności zwierząt powinien odpowiadać skillowi.',good:'Łatwa do rozwijania równolegle z questowaniem i dobry sposób na dodatkowy zarobek. Łączy się z Leatherworking, ale może też służyć wyłącznie do sprzedaży skór.',pair:'Leatherworking'},
+  Tailoring:{type:'Główna · wytwarzanie',what:'Szyje cloth armor, torby i inne tekstylne przedmioty. W przeciwieństwie do profesji opartych o rudy czy zioła, tkaniny zwykle zdobywa się z humanoidów, więc osobna profesja zbieracka nie jest konieczna.',materials:'Cloth z humanoidów, nici, barwniki i inne dodatki od vendorów; niektóre recepty wymagają rzadkich komponentów.',how:'Zbieraj cloth z humanoidów, kupuj nici i barwniki, a następnie szyj torby i przedmioty u krawieckiego warsztatu. Ucz się recept u trenerów i ze schematów.',good:'Naturalna dla Mage, Priest i Warlock, bo może tworzyć cloth gear. Torby są przydatne każdej postaci. Dobrze łączy się z Enchanting, bo własne wyroby można rozkładać.',pair:'Enchanting'},
+  Cooking:{type:'Poboczna · wytwarzanie',what:'Gotuje jedzenie, które odnawia zdrowie po walce; część potraw daje też czasowe bonusy. Profesja może ułatwić levelowanie i przygotowanie do grupowej zawartości.',materials:'Mięso ze stworzeń, ryby z Fishing, przyprawy i niektóre składniki od vendorów lub z łupów.',how:'Ucz się przepisów u Cooking trainerów i z książek. Gotuj przy ogniu, obozowisku lub odpowiednim stanowisku, korzystając z przepisów dopasowanych do skillu.',good:'Przydatna każdej klasie, szczególnie podczas długiego levelowania, gdy jedzenie ogranicza postoje na leczenie. Fishing zapewnia własne składniki.',pair:'Fishing'},
+  Fishing:{type:'Poboczna · zbieranie',what:'Łowi ryby z wody, a także inne przedmioty i materiały zależne od miejsca. Ryby można sprzedać, ugotować albo wykorzystać w receptach.',materials:'Ryby i inne połowy z wód; wędka, przynęty lub lury mogą pomagać w łowieniu. Rodzaj połowu zależy od strefy i łowiska.',how:'Naucz się Fishing, kup wędkę, wyposaż ją i łów w dostępnym miejscu z brzegu. Podnoś skill częstymi połowami; używaj przynęt, gdy potrzebujesz lepszego poziomu łowienia.',good:'Dobra dla graczy, którzy chcą zbierać składniki do Cooking, szukać konkretnych ryb lub spokojnie zarabiać. Cooking jest naturalnym uzupełnieniem.',pair:'Cooking'},
+  'First Aid':{type:'Poboczna · wsparcie',what:'Wytwarza bandage z tkanin, by leczyć siebie lub sojuszników bez zużywania many. Wymaga chwili bez otrzymywania obrażeń, więc najlepiej używać jej po odsunięciu się od walki.',materials:'Cloth z humanoidów; w klasycznym zestawie także venom sacs do wytwarzania anti-venom. Recepty i szczegóły Forever mogą się różnić.',how:'Zbieraj cloth podczas questów, ucz się kolejnych bandage u First Aid trainerów lub z książek i używaj ich poza bezpośrednim ostrzałem.',good:'Bardzo pomocna dla klas bez własnego leczenia oraz jako dodatkowy sposób na oszczędzanie jedzenia i many. Nie zajmuje miejsca głównej profesji.',pair:'Brak wymaganej pary'}
+}
+
 // Guide text is editorial advice. The ratings and the listed builds remain the site's existing data.
 const specGuides = {
   'Warlock|Affliction': {role:'DPS — ranged, damage over time', description:'Nakłada klątwy i efekty obrażeń w czasie, a potem utrzymuje przeciwników pod presją. Dobrze radzi sobie z długimi walkami i solo dzięki petowi oraz narzędziom kontroli.', early:'Sprawne questowanie; pet pomaga utrzymać przeciwników z dala.', mid:'Rośnie siła klątw i kontrola w dungeonach oraz PvP.', late:'Mocny w długich walkach i na wielu celach; wymaga pilnowania efektów.', pros:'Samowystarczalność, kontrola i stałe obrażenia.', cons:'Przygotowanie efektów zajmuje czas; obrażenia nie zawsze są natychmiastowe.'},
@@ -91,28 +106,55 @@ const raceInfo={
   'Orc':{
     description:'Pochodzą z Draenoru. Ten lud o szamańskich korzeniach został zniewolony przez Płonący Legion, ale odzyskał wolność i dziś walczy o honor oraz własne miejsce na Azeroth. Ich historia łączy surową wojowniczość z więzią z żywiołami.',
     classes:['Hunter','Mage','Rogue','Shaman','Warlock','Warrior']
+    classes:['Hunter','Mage','Rogue','Shaman','Warlock','Warrior'],
+    active:[['Blood Fury','Zwiększa Attack Power i Spell Power.'],['Shatter Curse','Zwiększa szybkość ruchu członków drużyny o 20%.']],
+    passive:[['Axe Specialization','Zwiększa szansę na critical strike o 1% podczas używania axes.'],['Hardiness','Skraca czas trwania stunów o 20%.']]
   },
   'Undead':{
     description:'Forsaken uwolnili się spod kontroli Króla Lisza i zwrócili przeciw Pladze. Ludzie nadal chcą ich wytępić, a oni sami nie zawsze ufają nawet swoim sprzymierzeńcom. To wybór dla osób, którym odpowiada mroczna, niezależna historia.',
     classes:['Mage','Paladin','Priest','Rogue','Warlock','Warrior']
+    classes:['Mage','Paladin','Priest','Rogue','Warlock','Warrior'],
+    active:[['Will of the Forsaken','Natychmiast usuwa efekty Charm, Fear i Sleep.'],['Cannibalize','Pozwala zjadać zwłoki Humanoid lub Undead, aby przez 10 s odzyskiwać Health i Mana.']],
+    passive:[['Underwater Breathing','Pozwala oddychać pod wodą 300% dłużej.'],['Touch of the Grave','Ataki mogą wysysać Health z celu. Szansa aktywacji zależy od klasy.']],
+    classNotes:{
+      Warrior:'Touch of the Grave ma 5% szansy aktywacji dla Warrior, Paladin i Rogue; dla Mage, Priest i Warlock to 10% według danych klienta beta.',
+      Paladin:'Touch of the Grave ma 5% szansy aktywacji dla Warrior, Paladin i Rogue; dla Mage, Priest i Warlock to 10% według danych klienta beta.',
+      Rogue:'Touch of the Grave ma 5% szansy aktywacji dla Warrior, Paladin i Rogue; dla Mage, Priest i Warlock to 10% według danych klienta beta.',
+      Mage:'Touch of the Grave ma 10% szansy aktywacji dla Mage, Priest i Warlock; dla Warrior, Paladin i Rogue to 5% według danych klienta beta.',
+      Priest:'Touch of the Grave ma 10% szansy aktywacji dla Mage, Priest i Warlock; dla Warrior, Paladin i Rogue to 5% według danych klienta beta.',
+      Warlock:'Touch of the Grave ma 10% szansy aktywacji dla Mage, Priest i Warlock; dla Warrior, Paladin i Rogue to 5% według danych klienta beta.'
+    },
+    priestSpells:[['Touch of Weakness · level 10','Osłabia atakującego, gdy uderzy kapłana wręcz.'],['Dark Sacrifice · level 20','Poświęca część Health, aby odzyskać Mana.']]
   },
   'Tauren':{
     description:'Taureni czczą Matkę Ziemię i starają się chronić równowagę natury. Gdy centaury zagroziły ich przetrwaniu, orki pomogły im odeprzeć atak — ten dług krwi połączył oba ludy. Spokojni z natury, walczą zaciekle w obronie swojej ziemi.',
     classes:['Druid','Hunter','Shaman','Warrior']
+    classes:['Druid','Hunter','Shaman','Warrior'],
+    active:[['War Stomp','Ogłusza do 5 pobliskich przeciwników na 2 s.'],['Cultivation','Pozwala zbierać specjalne bonusowe zioła bez Herbalism.']],
+    passive:[['Plainsrunning','Zwiększa szybkość ruchu Twoją i grupy o 2%.'],['Endurance','Zwiększa maksymalne Health o 5% i Hit Chance o 1%.']]
   },
   'Troll':{
     description:'Darkspearowie zostali wypędzeni z dżungli Stranglethorn. Po tym, jak orki pomogły im w potrzebie, ruszyli z Hordą do Kalimdoru. Zachowują własne pradawne i mroczne tradycje, a w Hordzie zdobyli szanowane miejsce.',
     classes:['Hunter','Mage','Priest','Rogue','Shaman','Warlock','Warrior']
+    classes:['Hunter','Mage','Priest','Rogue','Shaman','Warlock','Warrior'],
+    active:[['Berserking','Zwiększa szybkość ataku i rzucania zaklęć o 10%.'],['Rapid Regeneration','Odnawia 50% maksymalnego Health w ciągu 6 s.']],
+    passive:[['Beast Slaying','Zwiększa obrażenia zadawane Beasts o 5%.'],['Regeneration','Zwiększa regenerację Health o 10%; część regeneracji działa także w walce.']],
+    priestSpells:[['Hex of Weakness · level 10','Osłabia atak przeciwnika wręcz i ogranicza otrzymywane przez niego leczenie.'],['Shadowguard · level 20','Otacza kapłana cieniem, który rani napastników.']]
   },
   'Skyborne — Windshaper':{
     description:'Windshaperzy są potomkami Shen’dorei, którym duchy wiatru powierzyły dar widzenia żywiołów. Przybywają na Azeroth, by odnaleźć zaginionych mentorów i ocalić swoją tradycję. Po stronie Hordy mogą zostać szamanami, a także druidami, łowcami, łotrzykami lub wojownikami.',
     classes:['Druid','Hunter','Rogue','Shaman','Warrior']
+    classes:['Druid','Hunter','Rogue','Shaman','Warrior'],
+    active:[['Walk on Air','Pozwala bezpiecznie szybować w dół przez 10 s.'],['Skysight','Błogosławieństwo żywiołów zwiększa szybkość ruchu o 10% na 5 min.']],
+    passive:[['Wind Blessed','Zwiększa Haste o 1%.'],['Elemental Insight','Zwiększa obrażenia zadawane Elementals o 5%.']]
   }
 }
 
 function shell(){
 app.innerHTML=`<main class="wrap">
 <header><div><h1>⚔ WoW Forever — Horde Picker</h1><p>Wybierz swojego maina. Każdy użytkownik Discorda ma własne wybory.</p></div><div id="auth"></div></header>
+<nav class="page-tabs" role="tablist" aria-label="Sekcje strony"><button type="button" class="page-tab active" data-tab="picker-view" role="tab" aria-selected="true">Postacie</button><button type="button" class="page-tab" data-tab="profession-view" role="tab" aria-selected="false">Profesje</button></nav>
+<div id="picker-view" class="page-view">
 <section class="intro-section">
   <h2 class="section-title">Horda czy Alliance?</h2>
   <div class="faction-grid">
@@ -125,8 +167,10 @@ app.innerHTML=`<main class="wrap">
   <h2 class="section-title">Rasy Hordy</h2>
   <p class="section-lead">Wybierz rasę, poznaj jej charakter i zobacz klasy dostępne w WoW Forever.</p>
   <div class="race-grid">${Object.entries(raceInfo).map(([race,info])=>`<article class="race-card"><div class="race-card-heading"><h3>${race}</h3><button type="button" class="race-jump" data-race-select="${race}">Pokaż rankingi</button></div><p>${info.description}</p><div class="class-list"><span>Dostępne klasy</span><div>${info.classes.map(cls=>`<span class="class-chip">${cls}</span>`).join('')}</div></div></article>`).join('')}</div>
+  <div class="race-grid">${Object.entries(raceInfo).map(([race,info])=>`<article class="race-card"><div class="race-card-heading"><h3>${race}</h3><button type="button" class="race-jump" data-race-select="${race}">Pokaż rankingi</button></div><p>${info.description}</p><div class="class-list"><span>Dostępne klasy</span><div>${info.classes.map(cls=>`<span class="class-chip">${cls}</span>`).join('')}</div></div>${racialDetailsHtml(race)}</article>`).join('')}</div>
 </section>
 <section class="picker-section"><h2 class="section-title">Oceny klas i specjalizacji</h2><p class="section-lead">Poniżej znajdziesz oceniane zestawy rasy, klasy i specjalizacji.</p>
+<section class="picker-section"><h2 class="section-title">Oceny klas i specjalizacji</h2><p class="section-lead">Rasa daje własne aktywne i pasywne umiejętności; klasa i spec określają Twoją rolę, np. tank, healer albo DPS. Rozwiń oba opisy na karcie.</p>
 <section class="toolbar">
 <select id="race"><option value="">Wszystkie rasy</option>${races.map(x=>`<option>${x}</option>`).join('')}</select>
 <select id="cls"><option value="">Wszystkie klasy</option>${classes.map(x=>`<option>${x}</option>`).join('')}</select>
@@ -147,6 +191,7 @@ app.innerHTML=`<main class="wrap">
     <label>Imię widoczne na liście <input id="plan-name" maxlength="40" autocomplete="nickname"></label>
     <label>Profesja główna 1<select id="profession-one"><option value="">Wybierz profesję</option>${primaryProfessions.map(x=>`<option>${x}</option>`).join('')}</select></label>
     <label>Profesja główna 2<select id="profession-two"><option value="">Wybierz profesję</option>${primaryProfessions.map(x=>`<option>${x}</option>`).join('')}</select></label>
+    <fieldset class="secondary-picks"><legend>Profesje poboczne — wybierz wszystkie, które planujesz</legend>${secondaryProfessions.map(name=>`<label><input type="checkbox" data-secondary-profession value="${name}"> ${name}</label>`).join('')}</fieldset>
     <label class="share-choice"><input id="plan-public" type="checkbox" checked> Pokaż mój plan na publicznej liście graczy</label>
     <button id="save-plan" type="button" disabled>Zapisz plan</button>
     <p class="data-note">Wybierasz dwie profesje główne. Cooking, Fishing i First Aid to profesje poboczne i nie zajmują tych miejsc. Lista bazuje na klasycznym zestawie WoW; szczegóły zmian Forever oznaczamy jako wymagające potwierdzenia.</p>
@@ -156,7 +201,41 @@ app.innerHTML=`<main class="wrap">
   <div id="roster-status" class="roster-status" aria-live="polite"></div>
   <div id="player-roster" class="player-roster"></div>
 </section>
+</div>
+<section id="profession-view" class="page-view profession-view" role="tabpanel" hidden>
+  <h2 class="section-title">Profesje w WoW: Forever</h2>
+  <p class="section-lead">Główne profesje zbierają materiały lub wytwarzają przedmioty. Poboczne możesz rozwijać obok nich i nie zajmują dwóch głównych miejsc.</p>
+  <div class="profession-intro"><b>Co wnosi Forever?</b><p>Profesje zachowują znajome recepty, ale dochodzą nowe przedmioty obozowe i użyteczność. Blizzard zapowiada po trzy obiekty do rozstawienia, uczone na różnych poziomach umiejętności, oraz premię lub narzędzie związane z każdą profesją. Szczegóły recept i efektów mogą zmieniać się w becie.</p><a href="https://worldofwarcraft.blizzard.com/en-us/news/24303313" target="_blank" rel="noreferrer">Oficjalny przegląd WoW: Forever</a></div>
+  <h3 class="profession-group-title">Główne — wybierasz maksymalnie dwie</h3>
+  <p class="section-lead">Trzy profesje zbierackie dostarczają surowców; sześć profesji wytwórczych zużywa je, by tworzyć przedmioty.</p>
+  <div id="primary-profession-list" class="profession-grid"></div>
+  <h3 class="profession-group-title">Poboczne — rozwijaj obok głównych</h3>
+  <p class="section-lead">Cooking, Fishing i First Aid nie zajmują miejsc na profesje główne. Najczęściej można nauczyć się wszystkich trzech.</p>
+  <div id="secondary-profession-list" class="profession-grid"></div>
+  <p class="profession-source-note">Opisy zbierania i materiałów bazują na klasycznym systemie oraz publicznych danych klienta beta. Dokładne recepty, progi umiejętności i obiekty obozowe mogą się zmienić przed premierą. <a href="https://theforeverera.com/en/guides/professions/" target="_blank" rel="noreferrer">Recepty i materiały z bety</a> · <a href="https://www.icy-veins.com/wow-forever/professions-overview/" target="_blank" rel="noreferrer">Przewodnik dla graczy</a>.</p>
+</section>
 </main>`
+}
+
+function renderProfessionList(){
+const renderGroup=(names,target)=>{
+const container=document.querySelector(target)
+container.innerHTML=names.map(name=>{
+  const item=professionInfo[name]
+  return `<article class="profession-card"><div class="profession-card-head"><h4>${escapeHtml(name)}</h4><span>${escapeHtml(item.type)}</span></div><p>${escapeHtml(item.what)}</p><div class="profession-facts"><section><b>Skąd brać materiały</b><p>${escapeHtml(item.materials)}</p></section><section><b>Jak rozwijać</b><p>${escapeHtml(item.how)}</p></section><section><b>Dla kogo i po co</b><p>${escapeHtml(item.good)}</p></section></div><p class="profession-pair"><b>Dobra para:</b> ${escapeHtml(item.pair)}</p></article>`
+}).join('')
+}
+renderGroup(primaryProfessions,'#primary-profession-list')
+renderGroup(secondaryProfessions,'#secondary-profession-list')
+}
+
+function switchTab(tabId){
+document.querySelectorAll('.page-view').forEach(view=>{view.hidden=view.id!==tabId})
+document.querySelectorAll('.page-tab').forEach(button=>{
+  const active=button.dataset.tab===tabId
+  button.classList.toggle('active',active)
+  button.setAttribute('aria-selected',String(active))
+})
 }
 
 function escapeHtml(value){
@@ -167,12 +246,27 @@ function getDiscordName(){
 return user?.user_metadata?.global_name||user?.user_metadata?.full_name||user?.user_metadata?.name||user?.user_metadata?.preferred_username||user?.email?.split('@')[0]||''
 }
 
+function racialDetailsHtml(race,cls=''){
+const info=raceInfo[race]
+if(!info)return ''
+const list=items=>items.map(([name,description])=>`<li><b>${escapeHtml(name)}</b> — ${escapeHtml(description)}</li>`).join('')
+const classNote=info.classNotes?.[cls]
+const classDifferences=!cls&&info.classNotes?[...new Set(Object.values(info.classNotes))]:[]
+const priestSpells=(!cls||cls==='Priest')?info.priestSpells:null
+return `<details class="racial-guide"><summary>Umiejętności rasy ${escapeHtml(race)}</summary><div class="racial-content"><b>Aktywne</b><ul>${list(info.active)}</ul><b>Pasywne</b><ul>${list(info.passive)}</ul>${classNote?`<p class="racial-class-note"><b>Dla klasy ${escapeHtml(cls)}:</b> ${escapeHtml(classNote)}</p>`:''}${classDifferences.length?`<div class="racial-class-note"><b>Efekt zależny od klasy</b>${classDifferences.map(note=>`<p>${escapeHtml(note)}</p>`).join('')}</div>`:''}${priestSpells?`<div class="priest-spells"><b>Zaklęcia tylko dla Priest tej rasy</b><ul>${list(priestSpells)}</ul></div>`:''}<p class="data-note">Nie wszystkie rasowe skille są dostępne od 1. poziomu; dokładny poziom i pełny tooltip sprawdź u trenera lub w księdze zaklęć. Efekty odczytano z klienta beta; mogą się zmienić. <a href="https://wowforeverhq.com/racials/" target="_blank" rel="noreferrer">Rasowe umiejętności z bety</a> · <a href="https://theforeverera.com/en/races/" target="_blank" rel="noreferrer">zmiany i zależności klasowe</a> · <a href="https://worldofwarcraft.blizzard.com/en-us/news/24303313" target="_blank" rel="noreferrer">Blizzard o zmianach</a>.</p></div></details>`
+}
+
 function showPlanEditor(characterKey){
 planSelection=data.find(row=>row.slice(0,3).join('|')===characterKey)||null
 const choice=document.querySelector('#plan-choice')
 choice.textContent=planSelection?`${planSelection[0]} ${planSelection[1]} — ${planSelection[2]}${user?'':' · Zaloguj się przez Discord, aby zapisać plan.'}`:'Najpierw wybierz postać z rankingu.'
 document.querySelector('#save-plan').disabled=!planSelection||!user
 document.querySelector('#plan-name').value=getDiscordName()
+const existing=playerPlans.find(plan=>user?.id===plan.user_id&&plan.character_key===characterKey)
+document.querySelector('#profession-one').value=existing?.profession_one||''
+document.querySelector('#profession-two').value=existing?.profession_two||''
+document.querySelector('#plan-public').checked=existing?.is_public??true
+document.querySelectorAll('[data-secondary-profession]').forEach(input=>{input.checked=(existing?.secondary_professions||[]).includes(input.value)})
 document.querySelector('#plan-editor').scrollIntoView({behavior:'smooth',block:'center'})
 }
 
@@ -187,7 +281,10 @@ list.innerHTML=playerPlans.map(plan=>{
   const character=data.find(row=>row.slice(0,3).join('|')===plan.character_key)
   if(!character)return ''
   const own=user?.id===plan.user_id
+  const primary=[plan.profession_one,plan.profession_two].filter(Boolean).join(' + ')||'nie wybrano'
+  const secondary=(plan.secondary_professions||[]).join(', ')||'nie wybrano'
   return `<article class="player-plan"><div><strong>${escapeHtml(plan.display_name)}</strong>${own&&!plan.is_public?'<small class="private-label">Prywatny — widzisz tylko Ty</small>':''}<h4>${escapeHtml(character[0])} ${escapeHtml(character[1])} — ${escapeHtml(character[2])}</h4><p>🛠 ${escapeHtml([plan.profession_one,plan.profession_two].filter(Boolean).join(' + ')||'Profesje niepodane')}</p></div>${own?`<button type="button" class="remove-plan" data-remove-plan="${encodeURIComponent(plan.character_key)}" aria-label="Usuń plan ${escapeHtml(character[0])} ${escapeHtml(character[1])}">Usuń</button>`:''}</article>`
+  return `<article class="player-plan"><div><strong>${escapeHtml(plan.display_name)}</strong>${own&&!plan.is_public?'<small class="private-label">Prywatny — widzisz tylko Ty</small>':''}<h4>${escapeHtml(character[0])} ${escapeHtml(character[1])} — ${escapeHtml(character[2])}</h4><p><b>Główne:</b> ${escapeHtml(primary)}</p><p><b>Poboczne:</b> ${escapeHtml(secondary)}</p></div>${own?`<button type="button" class="remove-plan" data-remove-plan="${encodeURIComponent(plan.character_key)}" aria-label="Usuń plan ${escapeHtml(character[0])} ${escapeHtml(character[1])}">Usuń</button>`:''}</article>`
 }).join('')
 list.querySelectorAll('[data-remove-plan]').forEach(button=>button.onclick=()=>deletePlan(decodeURIComponent(button.dataset.removePlan)))
 }
@@ -195,9 +292,11 @@ list.querySelectorAll('[data-remove-plan]').forEach(button=>button.onclick=()=>d
 async function loadRoster(){
 if(!supabase){renderRoster();return}
 const {data:rows,error}=await supabase.from('player_plans').select('user_id,character_key,display_name,profession_one,profession_two,is_public,updated_at').order('updated_at',{ascending:false})
+const {data:rows,error}=await supabase.from('player_plans').select('user_id,character_key,display_name,profession_one,profession_two,secondary_professions,is_public,updated_at').order('updated_at',{ascending:false})
 if(error){
  console.error('LOAD PLAYER PLANS ERROR:',error)
  document.querySelector('#roster-status').textContent='Lista nie została jeszcze podłączona. Wykonaj plik SQL „supabase-player-plans.sql” w Supabase, a potem odśwież stronę.'
+ document.querySelector('#roster-status').textContent='Nie udało się odczytać planów. Wykonaj aktualizację „supabase-secondary-professions.sql” w Supabase → SQL Editor, a potem odśwież stronę.'
  document.querySelector('#player-roster').innerHTML=''
  return
 }
@@ -212,7 +311,9 @@ const professionOne=document.querySelector('#profession-one').value||null
 const professionTwo=document.querySelector('#profession-two').value||null
 if(professionOne&&professionOne===professionTwo){alert('Wybierz dwie różne profesje.');return}
 const displayName=document.querySelector('#plan-name').value.trim()||getDiscordName()||'Gracz'
+const secondary=document.querySelectorAll('[data-secondary-profession]:checked')
 const plan={user_id:user.id,character_key:planSelection.slice(0,3).join('|'),display_name:displayName,profession_one:professionOne,profession_two:professionTwo,is_public:document.querySelector('#plan-public').checked}
+const plan={user_id:user.id,character_key:planSelection.slice(0,3).join('|'),display_name:displayName,profession_one:professionOne,profession_two:professionTwo,secondary_professions:[...secondary].map(input=>input.value),is_public:document.querySelector('#plan-public').checked}
 const {error}=await supabase.from('player_plans').upsert(plan,{onConflict:'user_id,character_key'})
 if(error){console.error('SAVE PLAYER PLAN ERROR:',error);alert('Nie udało się zapisać planu. Sprawdź konfigurację tabeli player_plans w Supabase.');return}
 await loadRoster()
@@ -242,6 +343,7 @@ return `<article class="card ${m?'chosen':''}">
 <div class="stats">${[['PvE',x[4]],['PvP',x[5]],['Level',x[6]],['Solo',x[7]],['Endgame',x[8]]].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}</div>
 <div class="prof">🛠 ${x[9]}</div>
 <details class="spec-guide"><summary>Rola i opis specjalizacji</summary><div class="guide-content"><p><b>Rola:</b> ${guide.role}</p><p>${guide.description}</p><div class="phase-grid"><section><b>Early game</b><p>${guide.early}</p></section><section><b>Mid game</b><p>${guide.mid}</p></section><section><b>Late game</b><p>${guide.late}</p></section></div><p><b>Mocne strony:</b> ${guide.pros}</p><p><b>Warto pamiętać:</b> ${guide.cons}</p></div></details>
+${racialDetailsHtml(x[0],x[1])}
 <button type="button" class="plan-button" data-plan="${encodeURIComponent(k)}">Dodaj do mojego planu</button>
 <div class="actions">${[['⭐','Must play'],['🔥','Bardzo chcę'],['👍','Może być'],['❌','Odpada']].map(([e,label])=>`<button type="button" class="${m===e?'active':''}" data-k="${k}" data-mark="${e}" aria-label="${label}: ${x[0]} ${x[1]} ${x[2]}" title="${label}">${e}</button>`).join('')}</div>
 </article>`}).join(''):'<div class="empty-state">Nie znaleziono postaci. Zmień wyszukiwanie lub filtry.</div>'
@@ -296,6 +398,8 @@ const nameInput=document.querySelector('#plan-name')
 if(nameInput&&!nameInput.value)nameInput.value=getDiscordName()
 }
 shell()
+document.querySelectorAll('.page-tab').forEach(button=>button.onclick=()=>switchTab(button.dataset.tab))
+renderProfessionList()
 ;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
 document.querySelector('#search').oninput=e=>{filter.search=e.target.value;render()}
 document.querySelector('#chosen-only').onchange=e=>{filter.chosenOnly=e.target.checked;render()}
