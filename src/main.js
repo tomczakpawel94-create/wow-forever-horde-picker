@@ -42,82 +42,271 @@ const data = [
   ['Troll','Warrior','Arms',9.0,8.8,9.4,7.8,8.4,8.8,'Engineering + Blacksmithing']
 ]
 
-const supabase = createClient(SUPABASE_URL || "https://placeholder.supabase.co", SUPABASE_ANON_KEY || "placeholder")
+const supabase = createClient(
+  SUPABASE_URL || "https://placeholder.supabase.co",
+  SUPABASE_ANON_KEY || "placeholder",
+  {
+    auth: {
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true
+    }
+  }
+)
 
 let user = null
 let marks = {}
 let filter = {race:'', cls:'', spec:'', sort:'avg'}
 
-const races=[...new Set(data.map(x=>x[0]))], classes=[...new Set(data.map(x=>x[1]))], specs=[...new Set(data.map(x=>x[2]))]
+const races = [...new Set(data.map(x=>x[0]))]
+const classes = [...new Set(data.map(x=>x[1]))]
+const specs = [...new Set(data.map(x=>x[2]))]
 
 function shell(){
-app.innerHTML=`<main class="wrap">
-<header><div><h1>⚔ WoW Forever — Horde Picker</h1><p>Wybierz swojego maina. Każdy użytkownik Discorda ma własne wybory.</p></div><div id="auth"></div></header>
+  app.innerHTML = `<main class="wrap">
+<header>
+  <div>
+    <h1>⚔ WoW Forever — Horde Picker</h1>
+    <p>Wybierz swojego maina. Każdy użytkownik Discorda ma własne wybory.</p>
+  </div>
+  <div id="auth"></div>
+</header>
+
 <section class="toolbar">
-<select id="race"><option value="">Wszystkie rasy</option>${races.map(x=>`<option>${x}</option>`).join('')}</select>
-<select id="cls"><option value="">Wszystkie klasy</option>${classes.map(x=>`<option>${x}</option>`).join('')}</select>
-<select id="spec"><option value="">Wszystkie specy</option>${specs.map(x=>`<option>${x}</option>`).join('')}</select>
-<select id="sort"><option value="avg">Najwyższa ocena</option><option value="pvp">PvP</option><option value="pve">PvE</option><option value="level">Leveling</option><option value="solo">Solo / World</option><option value="end">Endgame</option></select>
+<select id="race">
+  <option value="">Wszystkie rasy</option>
+  ${races.map(x=>`<option>${x}</option>`).join('')}
+</select>
+
+<select id="cls">
+  <option value="">Wszystkie klasy</option>
+  ${classes.map(x=>`<option>${x}</option>`).join('')}
+</select>
+
+<select id="spec">
+  <option value="">Wszystkie specy</option>
+  ${specs.map(x=>`<option>${x}</option>`).join('')}
+</select>
+
+<select id="sort">
+  <option value="avg">Najwyższa ocena</option>
+  <option value="pvp">PvP</option>
+  <option value="pve">PvE</option>
+  <option value="level">Leveling</option>
+  <option value="solo">Solo / World</option>
+  <option value="end">Endgame</option>
+</select>
+
 <button id="reset">Wyczyść moje wybory</button>
 </section>
-<div class="legend">⭐ Must play &nbsp; 🔥 Bardzo chcę &nbsp; 👍 Może być &nbsp; ❌ Odpada</div>
-<div id="summary"></div><section id="cards"></section>
+
+<div class="legend">
+  ⭐ Must play &nbsp; 🔥 Bardzo chcę &nbsp; 👍 Może być &nbsp; ❌ Odpada
+</div>
+
+<div id="summary"></div>
+<section id="cards"></section>
 </main>`
 }
 
 function render(){
-const idx={avg:3,pve:4,pvp:5,level:6,solo:7,end:8}[filter.sort]
-let rows=data.filter(x=>(!filter.race||x[0]===filter.race)&&(!filter.cls||x[1]===filter.cls)&&(!filter.spec||x[2]===filter.spec))
-rows.sort((a,b)=>b[idx]-a[idx])
-document.querySelector('#cards').innerHTML=rows.map(x=>{
-const k=x.slice(0,3).join('|'), m=marks[k]||''
-return `<article class="card ${m?'chosen':''}">
-<div class="top"><div><small>${x[0]}</small><h2>${x[1]} — ${x[2]}</h2></div><strong>${x[3].toFixed(1)}<small>/10</small></strong></div>
-<div class="stats">${[['PvE',x[4]],['PvP',x[5]],['Level',x[6]],['Solo',x[7]],['Endgame',x[8]]].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}</div>
+  const idx = {
+    avg:3,
+    pve:4,
+    pvp:5,
+    level:6,
+    solo:7,
+    end:8
+  }[filter.sort]
+
+  let rows = data.filter(x =>
+    (!filter.race || x[0] === filter.race) &&
+    (!filter.cls || x[1] === filter.cls) &&
+    (!filter.spec || x[2] === filter.spec)
+  )
+
+  rows.sort((a,b)=>b[idx]-a[idx])
+
+  document.querySelector('#cards').innerHTML = rows.map(x=>{
+    const k = x.slice(0,3).join('|')
+    const m = marks[k] || ''
+
+    return `<article class="card ${m?'chosen':''}">
+<div class="top">
+  <div>
+    <small>${x[0]}</small>
+    <h2>${x[1]} — ${x[2]}</h2>
+  </div>
+  <strong>${x[3].toFixed(1)}<small>/10</small></strong>
+</div>
+
+<div class="stats">
+${[
+  ['PvE',x[4]],
+  ['PvP',x[5]],
+  ['Level',x[6]],
+  ['Solo',x[7]],
+  ['Endgame',x[8]]
+].map(y=>`<span>${y[0]}<b>${y[1]}</b></span>`).join('')}
+</div>
+
 <div class="prof">🛠 ${x[9]}</div>
-<div class="actions">${['⭐','🔥','👍','❌'].map(e=>`<button class="${m===e?'active':''}" data-k="${k}" data-mark="${e}">${e}</button>`).join('')}</div>
-</article>`}).join('')
-document.querySelector('#summary').innerHTML=`<b>Moje wybory: ${Object.keys(marks).length}</b> <span>⭐ ${Object.values(marks).filter(x=>x==='⭐').length}</span> <span>🔥 ${Object.values(marks).filter(x=>x==='🔥').length}</span> <span>👍 ${Object.values(marks).filter(x=>x==='👍').length}</span>`
-document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>setMark(b.dataset.k,b.dataset.mark))
+
+<div class="actions">
+${['⭐','🔥','👍','❌'].map(e=>
+  `<button class="${m===e?'active':''}" data-k="${k}" data-mark="${e}">${e}</button>`
+).join('')}
+</div>
+</article>`
+  }).join('')
+
+  document.querySelector('#summary').innerHTML =
+    `<b>Moje wybory: ${Object.keys(marks).length}</b>
+    <span>⭐ ${Object.values(marks).filter(x=>x==='⭐').length}</span>
+    <span>🔥 ${Object.values(marks).filter(x=>x==='🔥').length}</span>
+    <span>👍 ${Object.values(marks).filter(x=>x==='👍').length}</span>`
+
+  document.querySelectorAll('.actions button')
+    .forEach(b=>b.onclick=()=>setMark(b.dataset.k,b.dataset.mark))
 }
 
 async function loadMarks(){
-if(!user){marks={};render();return}
-const {data,error}=await supabase.from('choices').select('character_key,mark').eq('user_id',user.id)
-if(!error) marks=Object.fromEntries(data.map(x=>[x.character_key,x.mark]))
-render()
+  if(!user){
+    marks = {}
+    render()
+    return
+  }
+
+  const {data,error} = await supabase
+    .from('choices')
+    .select('character_key,mark')
+    .eq('user_id',user.id)
+
+  if(!error){
+    marks = Object.fromEntries(
+      data.map(x=>[x.character_key,x.mark])
+    )
+  }
+
+  render()
 }
+
 async function setMark(k,mark){
-if(!user){alert('Najpierw zaloguj się przez Discord.');return}
-if(marks[k]===mark){delete marks[k];await supabase.from('choices').delete().eq('user_id',user.id).eq('character_key',k)}
-else {marks[k]=mark;await supabase.from('choices').upsert({user_id:user.id,character_key:k,mark},{onConflict:'user_id,character_key'})}
-render()
-}
-async function auth(session=null){
-if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return
-if(session) user=session.user
-else {
-const {data}=await supabase.auth.getSession()
-user=data.session?.user||null
-}
-const a=document.querySelector('#auth')
-a.innerHTML=user
-?`<span class="user">${user.user_metadata?.full_name||user.email||'Discord user'}</span><button id="logout">Wyloguj</button>`
-:`<button id="login">🔵 Zaloguj przez Discord</button>`
+  if(!user){
+    alert('Najpierw zaloguj się przez Discord.')
+    return
+  }
 
-if(document.querySelector('#login')){
-document.querySelector('#login').onclick=()=>supabase.auth.signInWithOAuth({
-provider:'discord',
-options:{redirectTo:location.origin}
-})
+  if(marks[k]===mark){
+    delete marks[k]
+
+    await supabase
+      .from('choices')
+      .delete()
+      .eq('user_id',user.id)
+      .eq('character_key',k)
+  }else{
+    marks[k]=mark
+
+    await supabase
+      .from('choices')
+      .upsert(
+        {
+          user_id:user.id,
+          character_key:k,
+          mark
+        },
+        {
+          onConflict:'user_id,character_key'
+        }
+      )
+  }
+
+  render()
 }
 
-if(document.querySelector('#logout')){
-document.querySelector('#logout').onclick=()=>supabase.auth.signOut().then(()=>location.reload())
+function renderAuth(){
+  const a = document.querySelector('#auth')
+
+  if(!a)return
+
+  if(user){
+    a.innerHTML =
+      `<span class="user">${user.user_metadata?.full_name || user.email || 'Discord user'}</span>
+      <button id="logout">Wyloguj</button>`
+
+    document.querySelector('#logout').onclick = async()=>{
+      await supabase.auth.signOut()
+      user = null
+      marks = {}
+      renderAuth()
+      render()
+    }
+
+  }else{
+    a.innerHTML =
+      `<button id="login">🔵 Zaloguj przez Discord</button>`
+
+    document.querySelector('#login').onclick = async()=>{
+      const {error} = await supabase.auth.signInWithOAuth({
+        provider:'discord',
+        options:{
+          redirectTo:window.location.origin
+        }
+      })
+
+      if(error){
+        console.error('Discord login error:',error)
+        alert('Błąd logowania przez Discord: '+error.message)
+      }
+    }
+  }
 }
+
+async function initialize(){
+  shell()
+
+  ;['race','cls','spec','sort'].forEach(id=>{
+    document.querySelector('#'+id).onchange=e=>{
+      filter[id] = e.target.value
+      render()
+    }
+  })
+
+  document.querySelector('#reset').onclick = async()=>{
+    if(!user){
+      alert('Zaloguj się.')
+      return
+    }
+
+    await supabase
+      .from('choices')
+      .delete()
+      .eq('user_id',user.id)
+
+    marks = {}
+    render()
+  }
+
+  supabase.auth.onAuthStateChange(async(_event,session)=>{
+    user = session?.user || null
+
+    renderAuth()
+
+    await loadMarks()
+  })
+
+  const {data,error} = await supabase.auth.getSession()
+
+  if(error){
+    console.error('Session error:',error)
+  }
+
+  user = data?.session?.user || null
+
+  renderAuth()
+
+  await loadMarks()
 }
-shell()
-;['race','cls','spec','sort'].forEach(id=>document.querySelector('#'+id).onchange=e=>{filter[{race:'race',cls:'cls',spec:'spec',sort:'sort'}[id]]=e.target.value;render()})
-document.querySelector('#reset').onclick=async()=>{if(!user)return alert('Zaloguj się.');await supabase.from('choices').delete().eq('user_id',user.id);marks={};render()}
-await auth(); await loadMarks()
-supabase.auth.onAuthStateChange((_event,session)=>{user=session?.user||null;auth(session);setTimeout(()=>loadMarks(),0)})
+
+initialize()
